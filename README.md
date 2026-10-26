@@ -36,5 +36,11 @@ La progression est gardée dans le navigateur (localStorage).
 ## Ajouter du contenu
 
 - Un décor ou une histoire : `js/decors.js`
-- Un jeu : un fichier dans `js/jeux/` qui ajoute `Jeux.monId`, puis l'ajouter dans `index.html` et dans `GROUPES` (`js/app.js`).
+- Un jeu : un fichier dans `js/jeux/` qui ajoute `Jeux.monId`, puis l'ajouter dans la liste de `js/fichiers.js` et dans `GROUPES` (`js/app.js`).
+
+## Mises à jour sans cache
+
+`index.html` ne fait que charger `js/fichiers.js`, qui charge ensuite le CSS et les scripts.
+Chaque fichier est demandé avec un paramètre `?v=` différent à chaque visite : le navigateur
+reprend donc toujours la dernière version publiée, sans avoir à vider son cache.
 - Les outils de quadrillage (plus court chemin, plateau, exécution d'un programme) sont dans `js/jeux/grille.js`.
