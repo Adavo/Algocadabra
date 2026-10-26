@@ -31,26 +31,51 @@ function creuserLabyrinthe(k, ouvertures) {
   return { n, murs, salle };
 }
 
+// Le plus petit nombre de blocs qui fait sortir la chauve-souris (en passant par la clé s'il y en a une).
+// Recherche exacte sur (case, direction, longueur du bloc en cours, clé prise) : continuer tout droit
+// dans le même bloc ne coûte rien (jusqu'à 9 répétitions), tourner coûte un bloc de plus.
+function moinsDeBlocs({ n, murs, depart, sortie, cle }) {
+  const directions = Object.values(DIRECTIONS);
+  const vus = new Set();
+  const file = [{ x: depart.x, y: depart.y, d: -1, r: 0, c: cle ? 0 : 1, cout: 0 }];
+  while (file.length) {
+    const e = file.shift();
+    const id = [e.x, e.y, e.d, e.r, e.c].join(',');
+    if (vus.has(id)) continue;
+    vus.add(id);
+    if (e.x === sortie.x && e.y === sortie.y && e.c) return e.cout;
+    directions.forEach((d, i) => {
+      const x = e.x + d.dx, y = e.y + d.dy;
+      if (x < 0 || y < 0 || x >= n || y >= n || murs.has(x + ',' + y)) return;
+      const memeBloc = i === e.d && e.r < 9;
+      const suite = {
+        x, y, d: i, r: memeBloc ? e.r + 1 : 1,
+        c: e.c || (cle && x === cle.x && y === cle.y) ? 1 : 0,
+        cout: e.cout + (memeBloc ? 0 : 1),
+      };
+      if (memeBloc) file.unshift(suite); else file.push(suite); // coût 0 devant, coût 1 derrière
+    });
+  }
+  return Infinity;
+}
+
 function genererLabyrinthe(c) {
   for (let essai = 0; essai < 400; essai++) {
     const { n, murs, salle } = creuserLabyrinthe(c.salles, c.ouvertures || 0);
     const depart = salle({ x: 0, y: hasard(c.salles) });
     const sortie = salle({ x: c.salles - 1, y: hasard(c.salles) });
     let cle = null;
-    let chemin = plusCourtChemin(n, depart, sortie, murs);
     if (c.cle) {
       cle = salle({ x: hasard(c.salles), y: hasard(c.salles) });
       if (memeCase(cle, depart) || memeCase(cle, sortie)) continue;
-      const aller = plusCourtChemin(n, depart, cle, murs);
-      const retour = plusCourtChemin(n, cle, sortie, murs);
       // La clé doit être en dehors du chemin direct, sinon elle ne demande aucune réflexion.
-      if (aller.length + retour.length <= chemin.length) continue;
-      chemin = aller.concat(retour);
+      const direct = plusCourtChemin(n, depart, sortie, murs).length;
+      if (plusCourtChemin(n, depart, cle, murs).length + plusCourtChemin(n, cle, sortie, murs).length <= direct) continue;
     }
-    const blocs = enBlocs(chemin).length;
-    if (blocs >= c.blocsMin && blocs <= c.blocsMaxi) {
-      return { n, murs, depart, sortie, cle, blocsMax: blocs + c.marge };
-    }
+    const lab = { n, murs, depart, sortie, cle };
+    const blocs = moinsDeBlocs(lab);
+    // Quelques blocs de plus que le strict minimum : plusieurs bons chemins marchent.
+    if (blocs >= c.blocsMin && blocs <= c.blocsMaxi) return { ...lab, blocsMax: blocs + c.marge };
   }
   return null;
 }
@@ -62,11 +87,12 @@ Jeux.labyrinthe = {
   concept: "Planifier un algorithme en entier avant de l'exécuter. Le nombre de blocs est limité : il faut repérer les déplacements répétés et utiliser « répéter N fois », c'est-à-dire une boucle. Avec la clé, il faut découper le problème en deux sous-objectifs.",
   manches: 2,
   niveaux: [
-    { salles: 3, blocsMin: 3, blocsMaxi: 5, marge: 2 },
-    { salles: 4, blocsMin: 5, blocsMaxi: 7, marge: 1 },
-    { salles: 4, blocsMin: 6, blocsMaxi: 9, marge: 1, cle: true },
-    { salles: 5, blocsMin: 6, blocsMaxi: 9, marge: 0, ouvertures: 3 },
-    { salles: 5, blocsMin: 8, blocsMaxi: 11, marge: 0, cle: true, ouvertures: 2 },
+    // blocsMin / blocsMaxi : le minimum de blocs de la grotte choisie ; marge : blocs offerts en plus.
+    { salles: 3, blocsMin: 3, blocsMaxi: 5, marge: 3 },
+    { salles: 4, blocsMin: 4, blocsMaxi: 7, marge: 2 },
+    { salles: 4, blocsMin: 5, blocsMaxi: 9, marge: 2, cle: true },
+    { salles: 5, blocsMin: 5, blocsMaxi: 9, marge: 2, ouvertures: 3 },
+    { salles: 5, blocsMin: 7, blocsMaxi: 11, marge: 2, cle: true, ouvertures: 2 },
   ],
 
   textes: {
@@ -74,8 +100,8 @@ Jeux.labyrinthe = {
     mur: 'Aïe, un mur ! Le bloc en rouge ne marche pas. Corrige ton programme.',
     sortieFermee: "La sortie est fermée : il faut d'abord prendre la clé !",
     pasSortie: "Le programme est fini mais la chauve-souris n'est pas sortie. Continue ton programme !",
-    plusDeBlocs: "Tu as utilisé tous tes blocs ! Touche le nombre d'un bloc pour le répéter plusieurs fois.",
-    intro: blocs => `Fais sortir la chauve-souris de la grotte, jusqu'à la lune. Tu n'as que ${blocs} blocs : touche le nombre d'un bloc pour le répéter plusieurs fois. Prépare tout le programme, puis appuie sur le bouton vert.`,
+    plusDeBlocs: "Tu as utilisé tous tes blocs ! Appuie sur le plus d'un bloc pour le répéter plusieurs fois.",
+    intro: blocs => `Fais sortir la chauve-souris de la grotte, jusqu'à la lune. Tu n'as que ${blocs} blocs : appuie sur le plus d'un bloc pour le répéter plusieurs fois. Touche la flèche d'un bloc pour la tourner, ou fais-la glisser pour la déplacer. Prépare tout le programme, puis appuie sur le bouton vert.`,
     encore: blocs => `Une nouvelle grotte ! Tu as ${blocs} blocs.`,
     cle: "Attention : la sortie est fermée, il faut d'abord prendre la clé.",
   },
@@ -115,21 +141,85 @@ Jeux.labyrinthe = {
 
     function dessiner(actif = -1, erreur = -1) {
       compteur.textContent = `🧱 ${programme.length} / ${blocsMax} blocs` + (cle ? (aCle ? '  ·  🗝️ ✔️' : '  ·  🗝️ à prendre') : '');
-      const lignes = programme.map((b, i) => el('div', {
-        class: 'bloc' + (i === actif ? ' active' : '') + (i === erreur ? ' erreur' : ''),
-      }, [
-        el('span', { class: 'bloc-fleche', text: DIRECTIONS[b.dir].symbole }),
-        el('button', {
-          class: 'bloc-fois', text: '× ' + b.fois, 'aria-label': 'Répéter ' + b.fois + ' fois, toucher pour changer',
-          onclick: () => { if (occupe) return; b.fois = b.fois % 9 + 1; Son.pop(); dessiner(); },
-        }),
-        el('button', {
-          class: 'bloc-suppr', text: '✖', 'aria-label': 'Enlever ce bloc',
-          onclick: () => { if (occupe) return; programme.splice(i, 1); Son.pop(); dessiner(); },
-        }),
-      ]));
+      const lignes = programme.map((b, i) => {
+        const changer = (delta) => () => {
+          if (occupe) return;
+          b.fois = Math.min(9, Math.max(1, b.fois + delta));
+          Son.pop();
+          dessiner();
+        };
+        const bloc = el('div', { class: 'bloc' + (i === actif ? ' active' : '') + (i === erreur ? ' erreur' : '') });
+        rendreDeplacable(bloc, b, i);
+        bloc.append(
+          el('span', { class: 'bloc-fleche poignee', text: DIRECTIONS[b.dir].symbole }),
+          el('button', { class: 'bloc-moins', text: '−', 'aria-label': 'Une fois de moins', onclick: changer(-1) }),
+          el('span', { class: 'bloc-fois', text: '× ' + b.fois }),
+          el('button', { class: 'bloc-plus', text: '+', 'aria-label': 'Une fois de plus', onclick: changer(+1) }),
+          el('button', {
+            class: 'bloc-suppr', text: '✖', 'aria-label': 'Enlever ce bloc',
+            onclick: () => { if (occupe) return; programme.splice(i, 1); Son.pop(); dessiner(); },
+          }),
+        );
+        return bloc;
+      });
       const vides = Array.from({ length: blocsMax - programme.length }, () => el('div', { class: 'bloc vide' }));
       bande.replaceChildren(...lignes, ...vides);
+    }
+
+    // Tout le bloc (sauf ses boutons) se prend avec le doigt : le toucher fait tourner sa flèche,
+    // le faire glisser le déplace dans le programme.
+    function rendreDeplacable(bloc, b, i) {
+      bloc.setAttribute('aria-label', 'Toucher pour changer la direction, glisser pour déplacer le bloc');
+      bloc.addEventListener('pointerdown', e => {
+        if (occupe || e.target.closest('button')) return;
+        e.preventDefault();
+        bloc.setPointerCapture(e.pointerId);
+        const debut = { x: e.clientX, y: e.clientY };
+        let fantome = null;
+        let cible = i;
+        const blocsDuProgramme = () => [...bande.querySelectorAll('.bloc:not(.vide)')];
+
+        const bouger = ev => {
+          if (!fantome && Math.hypot(ev.clientX - debut.x, ev.clientY - debut.y) < 10) return;
+          if (!fantome) {
+            // Une copie du bloc suit le doigt, à la même taille qu'à l'écran (l'écran peut être zoomé).
+            const copie = bloc.cloneNode(true);
+            copie.style.zoom = getComputedStyle(bande.closest('.ajuste')).zoom;
+            fantome = el('div', { class: 'fantome' }, [copie]);
+            document.body.append(fantome);
+            bloc.classList.add('en-deplacement');
+          }
+          fantome.style.left = ev.clientX + 'px';
+          fantome.style.top = ev.clientY + 'px';
+          // La place visée : le bloc le plus proche du doigt.
+          const blocs = blocsDuProgramme();
+          let meilleur = Infinity;
+          blocs.forEach((x, j) => {
+            const r = x.getBoundingClientRect();
+            const d = Math.hypot(ev.clientX - (r.left + r.width / 2), ev.clientY - (r.top + r.height / 2));
+            if (d < meilleur) { meilleur = d; cible = j; }
+          });
+          blocs.forEach((x, j) => x.classList.toggle('cible', j === cible && j !== i));
+        };
+
+        const lacher = () => {
+          bloc.removeEventListener('pointermove', bouger);
+          bloc.removeEventListener('pointerup', lacher);
+          bloc.removeEventListener('pointercancel', lacher);
+          if (!fantome) {
+            // Simple toucher : la flèche tourne d'un quart de tour.
+            b.dir = ORDRE_DIRECTIONS[(ORDRE_DIRECTIONS.indexOf(b.dir) + 1) % 4];
+          } else {
+            fantome.remove();
+            if (cible !== i) programme.splice(cible, 0, programme.splice(i, 1)[0]);
+          }
+          Son.pop();
+          dessiner();
+        };
+        bloc.addEventListener('pointermove', bouger);
+        bloc.addEventListener('pointerup', lacher);
+        bloc.addEventListener('pointercancel', lacher);
+      });
     }
 
     function reinitialiser(erreur) {
