@@ -339,6 +339,9 @@ const Son = (() => {
   // Sur iPad et iPhone, le son ne s'ouvre qu'à la FIN d'un toucher (ou sur un clic), jamais au début :
   // on débloque donc l'audio et la voix à chacun de ces gestes.
   let voixDebloquee = false;
+  // Sur l'écran titre, le jeu est « en pause » : un toucher débloque le son mais ne relance pas
+  // la musique ; c'est le bouton « Jouer » qui la relance (voir reprendre()).
+  let enPause = true;
   function debloquer() {
     // Safari 16.4+ : jouer le son même quand l'iPad est en mode silencieux, comme une vidéo.
     if (navigator.audioSession) {
@@ -359,7 +362,7 @@ const Son = (() => {
       speechSynthesis.speak(u);
       voixDebloquee = true;
     }
-    Musique.demarrer();
+    if (!enPause) Musique.demarrer();
   }
   for (const geste of ['pointerup', 'touchend', 'click', 'keydown']) {
     document.addEventListener(geste, debloquer, { passive: true });
@@ -375,6 +378,16 @@ const Son = (() => {
     dire,
     taire,
     debloquer,
+    // « Quitter » : plus de voix ni de musique jusqu'au prochain « Jouer ».
+    pause() {
+      enPause = true;
+      taire();
+      Musique.arreter();
+    },
+    reprendre() {
+      enPause = false;
+      Musique.demarrer();
+    },
     pourLaVoix,
     voixFrancaises,
     get voix() { return voix; },
