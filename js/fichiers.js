@@ -18,6 +18,7 @@
     'js/jeux/grimoire.js',
     'js/jeux/conditions.js',
     'js/jeux/balance.js',
+    'js/parents.js',
     'js/app.js',
   ];
 

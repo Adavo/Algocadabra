@@ -34,11 +34,11 @@ sans jamais étiqueter un univers « pour filles » ou « pour garçons ».
 
 - Une petite musique de fond magique est jouée par le navigateur lui-même (Web Audio, aucun fichier audio),
   à partir du premier toucher de l'enfant. Elle baisse automatiquement pendant que la voix lit une consigne.
-- 🎵 coupe ou remet la musique seule ; 🔊 coupe ou remet tout le son (voix, bruitages, musique).
+- Le son (tout couper, volume de la voix, musique et son volume) se règle dans l'espace parents ; les enfants n'ont que 👂 pour réécouter la consigne.
 - La musique s'arrête quand la page est cachée (autre onglet, tablette en veille).
 - La voix des consignes est choisie automatiquement parmi les voix françaises de l'appareil, en préférant
   les voix « naturelles » (Edge : « Natural », Chrome : « Google français », iPad/Mac : « Premium »).
-  Un parent peut en choisir une autre dans « Pour les parents ». Les consignes sont lues phrase par phrase.
+  Un parent peut en choisir une autre dans l'espace parents. Les consignes sont lues phrase par phrase.
 
 Les labyrinthes, terrains et sorts sont générés au hasard : chaque partie est différente.
 La progression est gardée dans le navigateur (localStorage).
@@ -47,10 +47,17 @@ La progression est gardée dans le navigateur (localStorage).
 
 - Un décor ou une histoire : `js/decors.js`
 - Un jeu : un fichier dans `js/jeux/` qui ajoute `Jeux.monId`, puis l'ajouter dans la liste de `js/fichiers.js` et dans `GROUPES` (`js/app.js`).
+- Les outils de quadrillage (plus court chemin, plateau, exécution d'un programme) sont dans `js/jeux/grille.js`.
 
 ## Mises à jour sans cache
 
 `index.html` ne fait que charger `js/fichiers.js`, qui charge ensuite le CSS et les scripts.
 Chaque fichier est demandé avec un paramètre `?v=` différent à chaque visite : le navigateur
 reprend donc toujours la dernière version publiée, sans avoir à vider son cache.
-- Les outils de quadrillage (plus court chemin, plateau, exécution d'un programme) sont dans `js/jeux/grille.js`.
+
+## Espace parents
+
+Le bouton ⚙️ en haut à droite ouvre l'espace parents : son, volume de la voix, musique (marche/arrêt et volume), choix de la voix,
+remise à zéro de la progression, et ce que chaque jeu apprend. Pour y entrer, il faut taper la réponse
+à une question de culture générale (une date) tirée au hasard parmi 5, trop difficile pour les enfants et jamais lue à voix haute.
+Les questions sont dans `js/parents.js`.

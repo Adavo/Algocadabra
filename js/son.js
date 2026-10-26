@@ -6,6 +6,8 @@ const Son = (() => {
   let voix = null;
   let actif = Stockage.lire('algocadabra-son', true);
   let musiqueActive = Stockage.lire('algocadabra-musique', true);
+  // Volume de la voix réglé par les parents, en pourcentage.
+  let volumeVoix = Stockage.lire('algocadabra-volume-voix', 100);
   let ctx = null;
 
   function contexte() {
@@ -80,6 +82,7 @@ const Son = (() => {
       // Une voix naturelle sonne mieux sans retouche ; une ancienne voix, un peu plus lente et douce.
       u.rate = estNaturelle(voix) ? 0.95 : 0.88;
       u.pitch = estNaturelle(voix) ? 1 : 1.05;
+      u.volume = volumeVoix / 100;
       speechSynthesis.speak(u);
     }
   }
@@ -128,6 +131,9 @@ const Son = (() => {
     const ARPEGE = [0, 1, 2, 3, 2, 1, 2, 3];
 
     let sortie = null;
+    let niveau = null;
+    // Volume de la musique réglé par les parents, en pourcentage.
+    let volumeReglage = Stockage.lire('algocadabra-volume-musique', 55);
     let bruit = null;
     let minuterie = null;
     let prochain = 0;
@@ -208,8 +214,8 @@ const Son = (() => {
           sortie = c.createGain();
           sortie.gain.value = 0;
           // Volume général de la musique : nettement plus bas que la voix et les bruitages.
-          const niveau = c.createGain();
-          niveau.gain.value = 0.55;
+          niveau = c.createGain();
+          niveau.gain.value = volumeReglage / 100;
           sortie.connect(niveau).connect(c.destination);
           bruit = c.createBuffer(1, c.sampleRate * 0.1, c.sampleRate);
           const d = bruit.getChannelData(0);
@@ -237,6 +243,12 @@ const Son = (() => {
       demarrer,
       arreter,
       parole() { derniereParole = performance.now(); regler(); },
+      get reglage() { return volumeReglage; },
+      reglerVolume(pourcentage) {
+        volumeReglage = pourcentage;
+        Stockage.ecrire('algocadabra-volume-musique', pourcentage);
+        if (niveau) niveau.gain.setTargetAtTime(pourcentage / 100, ctx.currentTime, 0.05);
+      },
       get enCours() { return !!minuterie; },
       get volume() { return volume; },
     };
@@ -272,6 +284,11 @@ const Son = (() => {
     oups: () => { note(330, 0, 0.15, 'sine', 0.1); note(262, 0.12, 0.25, 'sine', 0.1); },
     get actif() { return actif; },
     get musiqueActive() { return musiqueActive; },
+    get volumeVoix() { return volumeVoix; },
+    reglerVolumeVoix(pourcentage) {
+      volumeVoix = pourcentage;
+      Stockage.ecrire('algocadabra-volume-voix', pourcentage);
+    },
     // Coupe ou remet tout le son (voix, bruitages et musique).
     basculer() {
       actif = !actif;
