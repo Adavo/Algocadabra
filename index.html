@@ -2,7 +2,14 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <!-- viewport-fit=cover : le site s'étend sous la barre d'état de l'iPad (voir env(safe-area-inset-*) dans le CSS). -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
+  <!-- Ajouté à l'écran d'accueil : plein écran, barre d'état transparente au lieu d'une bande blanche. -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Algocadabra">
+  <meta name="theme-color" content="#140b33">
   <!-- Demande au navigateur de ne pas garder cette page en cache. -->
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
@@ -11,7 +18,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet">
   <!-- Couleur de fond en attendant la feuille de style, pour éviter un flash blanc. -->
-  <style>body { margin: 0; background: #140b33; }</style>
+  <style>html, body { margin: 0; background: #140b33; }</style>
 </head>
 <body>
   <div id="app"></div>

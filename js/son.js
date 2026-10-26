@@ -296,6 +296,7 @@ const Son = (() => {
 
   return {
     dire,
+    debloquer,
     pourLaVoix,
     voixFrancaises,
     get voix() { return voix; },

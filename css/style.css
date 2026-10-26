@@ -16,6 +16,14 @@
 * { box-sizing: border-box; }
 
 html, body { margin: 0; min-height: 100%; }
+/* Fond sombre aussi derrière la barre d'état de l'iPad et quand on tire la page vers le bas. */
+html { background: var(--nuit2); }
+/* Sur iPad/iPhone en plein écran, le site passe sous la barre d'état et autour des bords arrondis :
+   env(safe-area-inset-*) donne la place à laisser libre (0 ailleurs). */
+body {
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
 
 body {
   font-family: 'Baloo 2', 'Segoe UI Rounded', 'Arial Rounded MT Bold', 'Segoe UI', system-ui, sans-serif;
@@ -42,7 +50,7 @@ button {
 }
 button:focus-visible, [role="button"]:focus-visible { outline: 4px solid var(--or); outline-offset: 3px; }
 
-main { max-width: 900px; margin: 0 auto; padding: 8px 16px 40px; }
+main { max-width: 900px; margin: 0 auto; padding: 8px 16px calc(40px + env(safe-area-inset-bottom, 0px)); }
 
 /* ---------- Barre du haut ---------- */
 
@@ -50,7 +58,7 @@ main { max-width: 900px; margin: 0 auto; padding: 8px 16px 40px; }
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 16px;
+  padding: calc(12px + env(safe-area-inset-top, 0px)) 16px 12px;
   max-width: 900px;
   margin: 0 auto;
 }
@@ -106,7 +114,7 @@ main { max-width: 900px; margin: 0 auto; padding: 8px 16px 40px; }
   z-index: 30;
   background: #0b0620cc;
   display: flex; align-items: flex-start; justify-content: center;
-  padding: 24px 16px;
+  padding: calc(24px + env(safe-area-inset-top, 0px)) 16px calc(24px + env(safe-area-inset-bottom, 0px));
   overflow-y: auto;
 }
 .boite-parents {
@@ -287,6 +295,75 @@ main { max-width: 900px; margin: 0 auto; padding: 8px 16px 40px; }
 .grosse-bulle { width: clamp(140px, 28vw, 180px); }
 .grosse-bulle .emoji-bulle { font-size: clamp(2.4rem, 7vw, 3.4rem); }
 .grosse-bulle .nom { font-size: clamp(1rem, 3vw, 1.25rem); }
+
+/* ---------- Écran titre ---------- */
+
+.titre {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 10px;
+  text-align: center;
+  overflow: hidden;
+  padding-top: calc(16px + env(safe-area-inset-top, 0px));
+}
+.grand-titre {
+  margin: 0;
+  font-size: clamp(2.8rem, 11vw, 5.5rem);
+  font-weight: 800;
+  line-height: 1;
+  color: var(--or);
+  text-shadow: 0 0 24px #fcd34d88, 0 4px 0 #b45309;
+  animation: flotte 3.2s ease-in-out infinite;
+}
+.sous-titre-titre { margin: 0; font-size: clamp(1.1rem, 3.6vw, 1.5rem); font-weight: 700; opacity: 0.9; }
+.personnages { display: flex; align-items: flex-end; gap: 4px; margin: 6px 0 4px; }
+.sorciere-titre {
+  font-size: clamp(5rem, 22vw, 9rem);
+  line-height: 1;
+  animation: berce 3s ease-in-out infinite;
+  transform-origin: bottom center;
+  filter: drop-shadow(0 10px 8px #0008);
+}
+.chat-titre { font-size: clamp(2.6rem, 10vw, 4.2rem); filter: drop-shadow(0 6px 4px #0008); }
+.bouton-jouer {
+  width: clamp(110px, 28vw, 150px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #86efac, var(--vert) 60%, #15803d);
+  border: 6px solid #fff;
+  box-shadow: 0 0 0 0 #4ade80aa, 0 8px 0 #0004, 0 0 40px #4ade8088;
+  display: flex; align-items: center; justify-content: center;
+  animation: pulse 1.6s ease-out infinite;
+}
+.bouton-jouer:active { transform: scale(0.94); }
+.bouton-jouer .triangle {
+  width: 0; height: 0;
+  margin-left: 12%;
+  border-top: clamp(26px, 6.5vw, 36px) solid transparent;
+  border-bottom: clamp(26px, 6.5vw, 36px) solid transparent;
+  border-left: clamp(42px, 10.5vw, 58px) solid #fff;
+  filter: drop-shadow(0 2px 2px #0003);
+}
+.indice-titre { margin: 6px 0 0; font-size: 1.2rem; font-weight: 700; animation: clignote 1.6s infinite; }
+.etincelles span {
+  position: absolute;
+  font-size: 1.8rem;
+  opacity: 0.8;
+  animation: flotte 4s ease-in-out infinite;
+}
+.etincelles span:nth-child(1) { top: 12%; left: 10%; }
+.etincelles span:nth-child(2) { top: 18%; right: 12%; animation-delay: 0.8s; }
+.etincelles span:nth-child(3) { top: 6%; left: 46%; font-size: 2.4rem; animation-delay: 1.4s; }
+.etincelles span:nth-child(4) { bottom: 16%; left: 14%; animation-delay: 0.4s; }
+.etincelles span:nth-child(5) { bottom: 22%; right: 10%; animation-delay: 1.8s; }
+.etincelles span:nth-child(6) { top: 42%; left: 4%; animation-delay: 1.1s; }
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 #4ade80aa, 0 8px 0 #0004, 0 0 40px #4ade8088; }
+  70% { box-shadow: 0 0 0 26px #4ade8000, 0 8px 0 #0004, 0 0 40px #4ade8088; }
+  100% { box-shadow: 0 0 0 0 #4ade8000, 0 8px 0 #0004, 0 0 40px #4ade8088; }
+}
 
 /* ---------- Niveaux ---------- */
 
@@ -784,7 +861,7 @@ main { max-width: 900px; margin: 0 auto; padding: 8px 16px 40px; }
   background: #0009;
   display: flex; align-items: center; justify-content: center;
   z-index: 10;
-  padding: 16px;
+  padding: calc(16px + env(safe-area-inset-top, 0px)) 16px calc(16px + env(safe-area-inset-bottom, 0px));
 }
 .boite-fete {
   background: var(--carte);
@@ -836,7 +913,7 @@ main { max-width: 900px; margin: 0 auto; padding: 8px 16px 40px; }
 
 @media (max-width: 600px) {
   .rond { width: 44px; height: 44px; font-size: 1.2rem; }
-  .barre { gap: 6px; padding: 10px 12px; }
+  .barre { gap: 6px; padding: calc(10px + env(safe-area-inset-top, 0px)) 12px 10px; }
   .boutons-barre { gap: 5px; }
   .barre h1 { font-size: 1.05rem; }
   .croix { grid-template-columns: repeat(3, 62px); grid-template-rows: repeat(2, 62px); }

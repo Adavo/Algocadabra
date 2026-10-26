@@ -221,4 +221,30 @@ function finNiveau(jeu, niveau) {
   document.body.append(fenetre);
 }
 
-ecranAccueil(null);
+// ---------- Écran titre ----------
+// Les navigateurs (surtout sur iPad) interdisent tout son avant un premier toucher :
+// ce gros bouton « Jouer » débloque la musique et la voix avant d'entrer dans la maison.
+
+function ecranTitre() {
+  const jouer = () => {
+    Son.debloquer();
+    Son.pop();
+    ecranAccueil(null);
+    consigne(derniereConsigne);
+  };
+  nouvelEcran(el('main', { class: 'titre' }, [
+    el('div', { class: 'etincelles', 'aria-hidden': 'true' }, ['✨', '⭐', '🌙', '✨', '💫', '⭐'].map(e => el('span', { text: e }))),
+    el('h1', { class: 'grand-titre', text: 'Algocadabra' }),
+    el('p', { class: 'sous-titre-titre', text: 'Les jeux magiques de la sorcière' }),
+    el('div', { class: 'personnages', 'aria-hidden': 'true' }, [
+      el('span', { class: 'sorciere-titre', text: '🧙‍♀️' }),
+      el('span', { class: 'chat-titre', text: '🐈‍⬛' }),
+    ]),
+    el('button', { class: 'bouton-jouer', 'aria-label': 'Jouer', onclick: jouer }, [
+      el('span', { class: 'triangle', 'aria-hidden': 'true' }),
+    ]),
+    el('p', { class: 'indice-titre', text: '👆 Touche pour jouer' }),
+  ]));
+}
+
+ecranTitre();
