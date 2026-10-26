@@ -165,7 +165,8 @@ function ecranAccueil(groupe = groupeCourant) {
     }));
   }
 
-  const chaudron = el('div', { class: 'chaudron-zone' }, [vapeur]);
+  // Le chaudron est posé sur le plancher, comme le reste du décor ; seules les bulles sont au centre.
+  const chaudron = el('div', { class: 'chaudron-zone plein-ecran' });
   chaudron.insertAdjacentHTML('beforeend', CHAUDRON_SVG);
   chaudron.append(el('div', { class: 'feu', 'aria-hidden': 'true' }, ['🔥', '🔥', '🔥'].map(f => el('span', { text: f }))));
 
@@ -184,6 +185,7 @@ function ecranAccueil(groupe = groupeCourant) {
       }),
       el('div', { class: 'chat plein-ecran', 'aria-hidden': 'true', text: '🐈‍⬛' }),
       chaudron,
+      vapeur,
     ]),
   );
 }

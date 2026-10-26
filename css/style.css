@@ -213,12 +213,14 @@ main {
 
 /* La pièce occupe tout l'écran : les murs sont le fond, le décor est collé aux bords. */
 .maison {
-  --sol: clamp(36px, 7vh, 80px);
+  --sol: clamp(22px, 4vh, 44px);
+  --chaudron: clamp(170px, 30vmin, 330px);
   background:
     repeating-linear-gradient(90deg, #ffffff06 0 60px, #00000010 60px 62px),
     radial-gradient(ellipse at 50% 70%, #00000000 40%, #0000004d 100%),
     linear-gradient(#56307e, #3a1f5c);
-  padding-bottom: calc(var(--sol) + env(safe-area-inset-bottom, 0px));
+  /* Les bulles se centrent dans l'espace libre au-dessus du chaudron. */
+  padding-bottom: calc(var(--sol) + var(--chaudron) * 0.78 + env(safe-area-inset-bottom, 0px));
 }
 .plein-ecran { position: absolute; }
 .fenetre {
@@ -259,7 +261,7 @@ main {
   left: calc(3vw + env(safe-area-inset-left, 0px));
   z-index: 2;
   background: none;
-  font-size: clamp(4rem, 19vmin, 13rem);
+  font-size: clamp(3.4rem, 15vmin, 10rem);
   line-height: 1;
   padding: 0;
   animation: berce 3s ease-in-out infinite;
@@ -270,27 +272,28 @@ main {
   bottom: calc(var(--sol) + env(safe-area-inset-bottom, 0px) - 4px);
   right: calc(4vw + env(safe-area-inset-right, 0px));
   z-index: 2;
-  font-size: clamp(2.6rem, 10vmin, 7rem);
+  font-size: clamp(2.2rem, 8vmin, 5.5rem);
   line-height: 1;
   filter: drop-shadow(0 6px 4px #0006);
 }
 .chaudron-zone {
+  bottom: calc(var(--sol) + env(safe-area-inset-bottom, 0px) - 2px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: var(--chaudron);
   display: flex; flex-direction: column; align-items: center;
-  width: 440px;
-  margin: 0 auto;
 }
 .chaudron { width: 100%; display: block; filter: drop-shadow(0 0 24px #4ade8055); }
 .bulles-svg circle { animation: bouillonne 1.6s ease-in infinite; transform-box: fill-box; transform-origin: center; }
 .bulles-svg circle:nth-child(2) { animation-delay: 0.4s; }
 .bulles-svg circle:nth-child(3) { animation-delay: 0.9s; }
 .bulles-svg circle:nth-child(4) { animation-delay: 1.2s; }
-.feu { display: flex; justify-content: center; gap: 4px; font-size: clamp(1.4rem, 4vw, 2.2rem); margin-top: -8px; }
+.feu { display: flex; justify-content: center; gap: 4px; font-size: calc(var(--chaudron) * 0.08); margin-top: -4px; }
 .feu span { animation: flamme 0.5s ease-in-out infinite alternate; }
 .feu span:nth-child(2) { animation-delay: 0.2s; }
 .vapeur {
   display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-end;
   gap: 12px;
-  margin-bottom: -18px;
   position: relative;
   z-index: 1;
 }
