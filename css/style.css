@@ -53,7 +53,12 @@ button:focus-visible, [role="button"]:focus-visible { outline: 4px solid var(--o
 /* Comme un jeu vidéo : la page ne défile jamais (ni rebond sur iPad).
    L'écran de jeu occupe toute la fenêtre ; la barre du haut flotte par-dessus.
    Le contenu est agrandi ou réduit par app.js pour remplir l'écran (voir ajuster()). */
-:root { --haut-barre: calc(80px + env(safe-area-inset-top, 0px)); }
+/* Sur iPad/iPhone, la barre descend sous la barre d'état ET sous le flou que le système met derrière
+   (deux fois la hauteur de la barre d'état) ; sur ordinateur, rien ne change (0). */
+:root {
+  --sous-statut: calc(env(safe-area-inset-top, 0px) * 2);
+  --haut-barre: calc(80px + var(--sous-statut));
+}
 html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 body { position: fixed; inset: 0; }
 #app { position: relative; height: 100%; }
@@ -76,7 +81,7 @@ main {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: calc(12px + env(safe-area-inset-top, 0px)) calc(16px + env(safe-area-inset-right, 0px)) 12px calc(16px + env(safe-area-inset-left, 0px));
+  padding: calc(12px + var(--sous-statut)) calc(16px + env(safe-area-inset-right, 0px)) 12px calc(16px + env(safe-area-inset-left, 0px));
   pointer-events: none; /* on touche le jeu à travers, sauf sur les boutons */
 }
 .barre > * { pointer-events: auto; }
@@ -214,13 +219,13 @@ main {
 /* La pièce occupe tout l'écran : les murs sont le fond, le décor est collé aux bords. */
 .maison {
   --sol: clamp(22px, 4vh, 44px);
-  --chaudron: clamp(170px, 30vmin, 330px);
+  --chaudron: clamp(190px, 34vmin, 380px);
   background:
     repeating-linear-gradient(90deg, #ffffff06 0 60px, #00000010 60px 62px),
     radial-gradient(ellipse at 50% 70%, #00000000 40%, #0000004d 100%),
     linear-gradient(#56307e, #3a1f5c);
   /* Les bulles se centrent dans l'espace libre au-dessus du chaudron. */
-  padding-bottom: calc(var(--sol) + var(--chaudron) * 0.78 + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(var(--sol) + var(--chaudron) * 0.45 + env(safe-area-inset-bottom, 0px));
 }
 .plein-ecran { position: absolute; }
 .fenetre {
@@ -288,7 +293,7 @@ main {
 .bulles-svg circle:nth-child(2) { animation-delay: 0.4s; }
 .bulles-svg circle:nth-child(3) { animation-delay: 0.9s; }
 .bulles-svg circle:nth-child(4) { animation-delay: 1.2s; }
-.feu { display: flex; justify-content: center; gap: 4px; font-size: calc(var(--chaudron) * 0.08); margin-top: -4px; }
+.feu { display: flex; justify-content: center; gap: 2px; font-size: calc(var(--chaudron) * 0.15); line-height: 1; margin-top: calc(var(--chaudron) * -0.06); }
 .feu span { animation: flamme 0.5s ease-in-out infinite alternate; }
 .feu span:nth-child(2) { animation-delay: 0.2s; }
 .vapeur {
@@ -933,9 +938,9 @@ main {
 }
 
 @media (max-width: 600px) {
-  :root { --haut-barre: calc(66px + env(safe-area-inset-top, 0px)); }
+  :root { --haut-barre: calc(66px + var(--sous-statut)); }
   .rond { width: 44px; height: 44px; font-size: 1.2rem; }
-  .barre { gap: 6px; padding: calc(10px + env(safe-area-inset-top, 0px)) 12px 10px; }
+  .barre { gap: 6px; padding: calc(10px + var(--sous-statut)) 12px 10px; }
   .boutons-barre { gap: 5px; }
   .barre h1 { font-size: 1.05rem; }
   .croix { grid-template-columns: repeat(3, 62px); grid-template-rows: repeat(2, 62px); }
