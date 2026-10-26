@@ -74,6 +74,9 @@ function ajuster(main) {
   // On mesure le dessin à sa taille de référence, puis on choisit le zoom qui remplit l'écran.
   contenu.style.zoom = '1';
   contenu.style.width = Math.min(largeur, LARGEUR_DESSIN) + 'px';
+  // Un dessin de taille fixe (carte, lieux…) plus large que l'écran : le cadre prend sa vraie largeur,
+  // sinon il dépasse à droite au lieu de rester centré.
+  if (contenu.scrollWidth > contenu.clientWidth) contenu.style.width = contenu.scrollWidth + 'px';
   const zoom = Math.min(ZOOM_MAX, largeur / contenu.scrollWidth, hauteur / contenu.scrollHeight);
   contenu.style.zoom = String(Math.floor(zoom * 1000) / 1000);
 }
