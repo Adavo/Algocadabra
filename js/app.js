@@ -25,23 +25,12 @@ let partie = 0; // change à chaque écran : les animations d'un ancien écran s
 
 const groupeDe = jeu => Object.keys(GROUPES).find(g => GROUPES[g].jeux.includes(jeu.id));
 
-// Une page web ne peut pas fermer l'application : « Quitter » arrête la musique et la voix
-// et revient à l'écran titre, comme le menu d'un jeu.
-function quitter() {
-  Son.pop();
-  Son.pause();
-  ecranTitre();
-}
-
-// retour : fonction du bouton en haut à gauche ; sur le tout premier écran, c'est « Quitter ».
-function barre(retour, titre, { quitte = false } = {}) {
+function barre(retour, titre) {
   // Seule l'oreille est pour les enfants ; le son se règle dans l'espace parents (⚙️).
   return el('header', { class: 'barre' }, [
-    quitte
-      ? el('button', { class: 'rond', 'aria-label': 'Quitter', title: 'Quitter', text: '🚪', onclick: quitter })
-      : retour
-        ? el('button', { class: 'rond', 'aria-label': 'Retour', text: '⬅️', onclick: () => { Son.pop(); retour(); } })
-        : el('span', { class: 'rond vide' }),
+    retour
+      ? el('button', { class: 'rond', 'aria-label': 'Retour', text: '⬅️', onclick: () => { Son.pop(); retour(); } })
+      : el('span', { class: 'rond vide' }),
     el('h1', { text: titre }),
     el('div', { class: 'boutons-barre' }, [
       el('button', { class: 'rond', 'aria-label': 'Répéter la consigne', text: '👂', onclick: () => Son.dire(derniereConsigne) }),
@@ -182,7 +171,7 @@ function ecranAccueil(groupe = groupeCourant) {
   chaudron.append(el('div', { class: 'feu', 'aria-hidden': 'true' }, ['🔥', '🔥', '🔥'].map(f => el('span', { text: f }))));
 
   nouvelEcran(
-    barre(groupe ? () => ecranAccueil(null) : null, groupe ? GROUPES[groupe].icone + ' ' + GROUPES[groupe].nom : '✨ Algocadabra ✨', { quitte: !groupe }),
+    barre(groupe ? () => ecranAccueil(null) : null, groupe ? GROUPES[groupe].icone + ' ' + GROUPES[groupe].nom : '✨ Algocadabra ✨'),
     // La pièce remplit tout l'écran : le décor « plein-ecran » reste collé aux bords,
     // et seul le chaudron avec ses bulles est agrandi ou réduit au milieu.
     el('main', { class: 'maison' }, [

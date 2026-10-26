@@ -378,12 +378,6 @@ const Son = (() => {
     dire,
     taire,
     debloquer,
-    // « Quitter » : plus de voix ni de musique jusqu'au prochain « Jouer ».
-    pause() {
-      enPause = true;
-      taire();
-      Musique.arreter();
-    },
     reprendre() {
       enPause = false;
       Musique.demarrer();
