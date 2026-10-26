@@ -14,7 +14,20 @@ Jeux.tri = {
     { nb: 5, ecart: 0.6 },
   ],
 
+  textes: {
+    plusPetit: 'Cherche le plus petit !',
+    plusPetitRestant: 'Cherche le plus petit de ceux qui restent !',
+    intro: "Range du plus petit au plus grand. Touche d'abord le plus petit.",
+    encore: 'Encore ! Du plus petit au plus grand.',
+  },
+
+  // Tout ce que ce jeu peut dire (pour enregistrer les fichiers audio).
+  phrases() {
+    return Object.values(this.textes);
+  },
+
   lancerManche(zone, { decor, config, premiere, consigne, reussi }) {
+    const T = Jeux.tri.textes;
     const base = 2.2;
     const objets = Array.from({ length: config.nb }, (_, rang) => ({ rang, taille: base + rang * config.ecart }));
     let suivant = 0;
@@ -29,7 +42,7 @@ Jeux.tri = {
           if (o.rang !== suivant) {
             Son.oups();
             secouer(b);
-            Son.dire(suivant === 0 ? 'Cherche le plus petit !' : 'Cherche le plus petit de ceux qui restent !');
+            Son.dire(suivant === 0 ? T.plusPetit : T.plusPetitRestant);
             return;
           }
           Son.pop();
@@ -48,6 +61,6 @@ Jeux.tri = {
       el('div', { class: 'indice', text: '👆' }),
       tas,
     );
-    consigne(premiere ? 'Range du plus petit au plus grand. Touche d\'abord le plus petit.' : 'Encore ! Du plus petit au plus grand.');
+    consigne(premiere ? T.intro : T.encore);
   },
 };

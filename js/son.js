@@ -59,36 +59,113 @@ const Son = (() => {
 
   const estNaturelle = v => v && noteVoix(v) >= 60;
 
-  // Le texte affiché n'est pas toujours bon à lire : on retire les emojis et les guillemets,
-  // on écrit « × 3 » en toutes lettres et on évite que « SI » soit épelé lettre par lettre.
-  function pourLaVoix(texte) {
-    return texte
-      .replace(/\p{Extended_Pictographic}|[\uFE0F\u200D\u20E3\u2190-\u21FF]/gu, '')
-      .replace(/[\u00AB\u00BB]/g, '')
-      .replace(/\u00D7\s*(\d+)(?!\s*fois)/g, '$1 fois')
-      .replace(/\u00D7/g, '')
-      .replace(/\b([A-ZÀ-Ý]{2,})\b/g, m => m.toLowerCase())
-      .replace(/\s{2,}/g, ' ')
-      .trim();
+  function enonce(phrase) {
+    const u = new SpeechSynthesisUtterance(phrase);
+    u.lang = 'fr-FR';
+    if (voix) u.voice = voix;
+    // Une voix naturelle sonne mieux sans retouche ; une ancienne voix, un peu plus lente et douce.
+    u.rate = estNaturelle(voix) ? 0.95 : 0.88;
+    u.pitch = estNaturelle(voix) ? 1 : 1.05;
+    u.volume = volumeVoix / 100;
+    return u;
+  }
+
+  // Dit une phrase avec la voix du navigateur et attend qu'elle soit finie
+  // (avec une limite de temps : certains navigateurs oublient de signaler la fin).
+  function direUnePhrase(phrase) {
+    return new Promise(fini => {
+      if (!('speechSynthesis' in window)) return fini();
+      const u = enonce(phrase);
+      const limite = setTimeout(fini, 2000 + phrase.length * 120);
+      u.onend = u.onerror = () => { clearTimeout(limite); fini(); };
+      speechSynthesis.speak(u);
+    });
+  }
+
+  // ---------- La voix enregistrée (fichiers créés avec Piper, voir outils/voix/) ----------
+  // Si voix/catalogue.json existe, chaque phrase qui a un fichier est jouée depuis ce fichier,
+  // et la voix du navigateur ne lit que les phrases qui n'en ont pas.
+
+  let catalogue = null; // { version, phrases: { clé: texte } }
+  const tampons = new Map(); // clé → promesse du son décodé (ou null s'il manque)
+  let sortieVoix = null;
+  let sourceVoix = null;
+  let jeton = 0; // change à chaque nouvelle consigne : l'ancienne s'arrête
+  let voixOccupee = false; // une consigne avec des fichiers est en train d'être dite
+
+  if (location.protocol !== 'file:') {
+    fetch('voix/catalogue.json?v=' + Date.now())
+      .then(r => (r.ok ? r.json() : null))
+      .then(c => { catalogue = c && c.phrases ? c : null; })
+      .catch(() => { /* pas de fichiers : la voix du navigateur fera tout */ });
+  }
+
+  const aUnFichier = phrase => !!(catalogue && catalogue.phrases[clePhrase(phrase)]);
+
+  function chargerTampon(cle) {
+    if (!tampons.has(cle)) {
+      tampons.set(cle, fetch(`voix/fichiers/${cle}.mp3?v=${catalogue.version}`)
+        .then(r => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(r.status))))
+        .then(donnees => new Promise((ok, ko) => contexte().decodeAudioData(donnees, ok, ko)))
+        .catch(() => null));
+    }
+    return tampons.get(cle);
+  }
+
+  function jouerTampon(tampon) {
+    return new Promise(fini => {
+      const c = contexte();
+      if (!sortieVoix) {
+        sortieVoix = c.createGain();
+        sortieVoix.connect(c.destination);
+      }
+      sortieVoix.gain.value = volumeVoix / 100;
+      const s = c.createBufferSource();
+      s.buffer = tampon;
+      s.connect(sortieVoix);
+      s.onended = () => { if (sourceVoix === s) sourceVoix = null; fini(); };
+      sourceVoix = s;
+      s.start();
+    });
+  }
+
+  function taire() {
+    jeton++;
+    voixOccupee = false;
+    if (sourceVoix) {
+      try { sourceVoix.stop(); } catch (e) { /* déjà fini */ }
+      sourceVoix = null;
+    }
+    if ('speechSynthesis' in window) speechSynthesis.cancel();
   }
 
   function dire(texte) {
-    if (!actif || !('speechSynthesis' in window)) return;
-    speechSynthesis.cancel();
+    if (!actif) return;
+    taire();
     Musique.parole();
     // Une phrase à la fois : des pauses plus naturelles entre les phrases,
     // et Chrome ne coupe plus les consignes longues au bout de 15 secondes.
-    const phrases = pourLaVoix(texte).split(/(?<=[.!?…])\s+/).filter(Boolean);
-    for (const phrase of phrases) {
-      const u = new SpeechSynthesisUtterance(phrase);
-      u.lang = 'fr-FR';
-      if (voix) u.voice = voix;
-      // Une voix naturelle sonne mieux sans retouche ; une ancienne voix, un peu plus lente et douce.
-      u.rate = estNaturelle(voix) ? 0.95 : 0.88;
-      u.pitch = estNaturelle(voix) ? 1 : 1.05;
-      u.volume = volumeVoix / 100;
-      speechSynthesis.speak(u);
+    const phrases = decouperPhrases(texte);
+    if (!phrases.some(aUnFichier)) {
+      // Rien d'enregistré : la voix du navigateur lit toutes les phrases à la suite.
+      if ('speechSynthesis' in window) phrases.forEach(p => speechSynthesis.speak(enonce(p)));
+      return;
     }
+    // Sinon, phrase après phrase : le fichier quand il existe, la voix du navigateur sinon.
+    const monJeton = jeton;
+    voixOccupee = true;
+    phrases.filter(aUnFichier).forEach(p => chargerTampon(clePhrase(p))); // on charge tout d'avance
+    (async () => {
+      for (const p of phrases) {
+        const tampon = aUnFichier(p) ? await chargerTampon(clePhrase(p)) : null;
+        if (monJeton !== jeton) return;
+        if (tampon) await jouerTampon(tampon);
+        else await direUnePhrase(p);
+        if (monJeton !== jeton) return;
+      }
+      voixOccupee = false;
+      Musique.parole(); // la musique remonte doucement après la dernière phrase
+    })();
   }
 
   function note(freq, debut, duree, type = 'sine', volume = 0.12) {
@@ -201,7 +278,7 @@ const Son = (() => {
     // Baisse vite quand la voix commence, remonte doucement quand elle s'arrête.
     function regler() {
       if (!sortie) return;
-      const parle = 'speechSynthesis' in window && (speechSynthesis.speaking || speechSynthesis.pending);
+      const parle = voixOccupee || ('speechSynthesis' in window && (speechSynthesis.speaking || speechSynthesis.pending));
       const cible = parle || performance.now() - derniereParole < 700 ? VOLUME_PAROLE : VOLUME;
       if (cible === volume) return;
       volume = cible;
@@ -296,6 +373,7 @@ const Son = (() => {
 
   return {
     dire,
+    taire,
     debloquer,
     pourLaVoix,
     voixFrancaises,
@@ -319,13 +397,16 @@ const Son = (() => {
     reglerVolumeVoix(pourcentage) {
       volumeVoix = pourcentage;
       Stockage.ecrire('algocadabra-volume-voix', pourcentage);
+      if (sortieVoix) sortieVoix.gain.value = pourcentage / 100;
     },
+    // Les consignes sont-elles enregistrées (fichiers Piper) ?
+    get voixEnregistree() { return !!catalogue; },
     // Coupe ou remet tout le son (voix, bruitages et musique).
     basculer() {
       actif = !actif;
       Stockage.ecrire('algocadabra-son', actif);
       if (!actif) {
-        if ('speechSynthesis' in window) speechSynthesis.cancel();
+        taire();
         Musique.arreter();
       } else {
         Musique.demarrer();
@@ -343,5 +424,3 @@ const Son = (() => {
   };
 })();
 
-const ENCOURAGEMENTS = ['Bravo !', 'Super !', 'Génial !', 'Trop fort !', 'Magnifique !', 'Youpi !'];
-const ESSAIE_ENCORE = ['Essaie encore !', 'Presque ! Essaie encore.', 'Oups ! Regarde bien.'];

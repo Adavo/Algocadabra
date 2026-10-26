@@ -46,7 +46,26 @@ Jeux.grimoire = {
     { taille: 6, obstacles: 6, min: 8, max: 10, erreurs: 2, nombres: true },
   ],
 
+  textes: {
+    citrouille: "Le chat s'est cogné contre une citrouille !",
+    horsPlateau: 'Le chat est sorti du plateau !',
+    ligneRouge: 'Le problème est sur la ligne en rouge, ou peut-être avant.',
+    fini: "Le sort est fini, mais le chat n'est pas sur la potion. Cherche l'erreur !",
+    intro: (erreurs, nombres) => `La sorcière a écrit un sort pour amener son chat jusqu'à la potion, mais il y a ${erreurs > 1 ? 'deux erreurs' : 'une erreur'}. Attention, le chat ne peut pas passer sur les citrouilles ! Lance le sort pour voir ce qui se passe, puis touche une flèche${nombres ? ' ou un nombre' : ''} pour la changer.`,
+    encore: erreurs => `Un nouveau sort avec ${erreurs > 1 ? 'deux erreurs' : 'une erreur'}. À toi de jouer !`,
+  },
+
+  // Tout ce que ce jeu peut dire (pour enregistrer les fichiers audio), pour chaque niveau.
+  phrases() {
+    const T = this.textes;
+    return [
+      T.citrouille, T.horsPlateau, T.ligneRouge, T.fini,
+      ...this.niveaux.flatMap(c => [T.intro(c.erreurs, c.nombres), T.encore(c.erreurs)]),
+    ];
+  },
+
   lancerManche(zone, { config, premiere, consigne, enCours, reussi }) {
+    const T = Jeux.grimoire.textes;
     const n = config.taille;
     let terrain, original;
     do {
@@ -109,10 +128,9 @@ Jeux.grimoire = {
         const p = DIRECTIONS[sort[r.bloc].dir];
         const q = { x: r.pos.x + p.dx, y: r.pos.y + p.dy };
         const obstacle = bloques.has(cleCase(q));
-        Son.dire((obstacle ? "Le chat s'est cogné contre une citrouille !" : 'Le chat est sorti du plateau !')
-          + ' Le problème est sur la ligne en rouge, ou peut-être avant.');
+        Son.dire((obstacle ? T.citrouille : T.horsPlateau) + ' ' + T.ligneRouge);
       } else {
-        Son.dire("Le sort est fini, mais le chat n'est pas sur la potion. Cherche l'erreur !");
+        Son.dire(T.fini);
       }
       await attendre(1800);
       if (!enCours()) return;
@@ -139,9 +157,6 @@ Jeux.grimoire = {
       ]),
     );
 
-    const texteErreurs = config.erreurs > 1 ? 'deux erreurs' : 'une erreur';
-    consigne(premiere
-      ? `La sorcière a écrit un sort pour amener son chat jusqu'à la potion, mais il y a ${texteErreurs}. Attention, le chat ne peut pas passer sur les citrouilles ! Lance le sort pour voir ce qui se passe, puis touche une flèche${config.nombres ? ' ou un nombre' : ''} pour la changer.`
-      : `Un nouveau sort avec ${texteErreurs}. À toi de jouer !`);
+    consigne(premiere ? T.intro(config.erreurs, config.nombres) : T.encore(config.erreurs));
   },
 };

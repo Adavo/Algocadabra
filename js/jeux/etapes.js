@@ -10,7 +10,27 @@ Jeux.etapes = {
   manches: 2,
   niveaux: [{ etapes: 3 }, { etapes: 3 }, { etapes: 4 }, { etapes: 4 }],
 
+  textes: {
+    intro: "Remets les images dans le bon ordre. Touche d'abord ce qui se passe en premier.",
+    histoire: titre => 'Histoire : ' + titre + '.',
+    certainesBonnes: 'Certaines images sont à la bonne place. Essaie de replacer les autres !',
+    pasToutAFait: "Pas tout à fait. Réfléchis : qu'est-ce qu'on fait en premier ?",
+  },
+
+  // Tout ce que ce jeu peut dire (pour enregistrer les fichiers audio) :
+  // les consignes, le titre de chaque histoire et chaque image, lue quand on la touche.
+  phrases() {
+    const T = this.textes;
+    const histoires = [...DECORS.flatMap(d => d.histoires), ...HISTOIRES_COMMUNES];
+    return [
+      T.intro, T.certainesBonnes, T.pasToutAFait,
+      ...histoires.map(h => T.histoire(h.titre)),
+      ...histoires.flatMap(h => h.etapes.map(([, texte]) => texte)),
+    ];
+  },
+
   lancerManche(zone, { decor, config, premiere, consigne, reussi }) {
+    const T = Jeux.etapes.textes;
     const toutes = [...decor.histoires, ...HISTOIRES_COMMUNES].filter(h => h.etapes.length === config.etapes);
     const neuves = toutes.filter(h => !dernieresHistoires.includes(h.titre));
     const candidates = neuves.length ? neuves : toutes;
@@ -65,7 +85,7 @@ Jeux.etapes = {
       dessiner();
       if (!fausses.length) return reussi();
       Son.oups();
-      Son.dire(bloquees.size ? 'Certaines images sont à la bonne place. Essaie de replacer les autres !' : 'Pas tout à fait. Réfléchis : qu\'est-ce qu\'on fait en premier ?');
+      Son.dire(bloquees.size ? T.certainesBonnes : T.pasToutAFait);
       fausses.forEach(i => secouer(cases[i]));
       setTimeout(() => { fausses.forEach(i => { places[i] = null; }); dessiner(); }, 900);
     }
@@ -77,6 +97,6 @@ Jeux.etapes = {
       el('div', { class: 'indice', text: '👆' }),
       el('div', { class: 'choix' }, cartes),
     );
-    consigne((premiere ? 'Remets les images dans le bon ordre. Touche d\'abord ce qui se passe en premier. ' : '') + 'Histoire : ' + histoire.titre + '.');
+    consigne((premiere ? T.intro + ' ' : '') + T.histoire(histoire.titre));
   },
 };

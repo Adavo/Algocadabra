@@ -15,7 +15,7 @@ let derniereQuestion = null;
 function ouvrirEspaceParents() {
   if (document.querySelector('.fenetre-parents')) return; // déjà ouvert
   Son.pop();
-  if ('speechSynthesis' in window) speechSynthesis.cancel();
+  Son.taire();
   const fenetre = el('div', { class: 'fenetre-parents', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Espace parents' });
   const boite = el('div', { class: 'boite-parents' });
   const fermer = () => {
@@ -186,16 +186,22 @@ function choixDeLaVoix() {
   if ('speechSynthesis' in window) speechSynthesis.onvoiceschanged = remplir;
   liste.addEventListener('change', () => {
     Son.choisirVoixParent(liste.value || null);
-    Son.dire('Bonjour ! Je suis la voix de la sorcière. On va bien s\'amuser !');
+    Son.dire(TEXTES.testVoix);
   });
 
   return el('div', { class: 'reglage' }, [
     el('label', { text: '🗣️ Voix des consignes' }),
+    el('p', {
+      class: 'conseil-voix',
+      text: Son.voixEnregistree
+        ? "🎙️ Les consignes sont lues avec la voix enregistrée. La voix choisie ici ne sert que pour les rares phrases sans enregistrement."
+        : '',
+    }),
     el('div', { class: 'ligne-voix' }, [
       liste,
       el('button', {
         class: 'bouton-texte petit', text: '▶️ Écouter',
-        onclick: () => Son.dire('Bonjour ! Je suis la voix de la sorcière. On va bien s\'amuser !'),
+        onclick: () => Son.dire(TEXTES.testVoix),
       }),
     ]),
     conseil,

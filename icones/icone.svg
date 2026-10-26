@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <radialGradient id="ciel" cx="50%" cy="30%" r="80%">
+      <stop offset="0%" stop-color="#6a35b0"/>
+      <stop offset="60%" stop-color="#2e1666"/>
+      <stop offset="100%" stop-color="#140b33"/>
+    </radialGradient>
+    <radialGradient id="potion" cx="50%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#ecfccb"/>
+      <stop offset="45%" stop-color="#86efac"/>
+      <stop offset="100%" stop-color="#22c55e"/>
+    </radialGradient>
+    <linearGradient id="fonte" x1="0" x2="1">
+      <stop offset="0%" stop-color="#4b4170"/>
+      <stop offset="45%" stop-color="#2a2342"/>
+      <stop offset="100%" stop-color="#141020"/>
+    </linearGradient>
+    <radialGradient id="lueur" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#4ade80" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#4ade80" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="or" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fff7c2"/>
+      <stop offset="100%" stop-color="#fbbf24"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Ciel de nuit (carré plein : l'iPad arrondit lui-même les coins) -->
+  <rect width="512" height="512" fill="url(#ciel)"/>
+  <g fill="#fff">
+    <circle cx="70" cy="88" r="4" opacity="0.8"/>
+    <circle cx="140" cy="46" r="3" opacity="0.6"/>
+    <circle cx="430" cy="210" r="3.5" opacity="0.7"/>
+    <circle cx="60" cy="250" r="3" opacity="0.5"/>
+    <circle cx="455" cy="60" r="2.5" opacity="0.6"/>
+  </g>
+
+  <!-- Lune -->
+  <path d="M118 120 a52 52 0 1 0 64 72 a42 42 0 1 1 -64 -72 z" fill="#fde68a"/>
+
+  <!-- Lueur verte autour du chaudron -->
+  <ellipse cx="256" cy="300" rx="230" ry="150" fill="url(#lueur)"/>
+
+  <!-- Bulles qui montent -->
+  <g fill="#bbf7d0">
+    <circle cx="228" cy="196" r="20" opacity="0.95"/>
+    <circle cx="292" cy="150" r="14" opacity="0.85"/>
+    <circle cx="250" cy="112" r="9" opacity="0.7"/>
+    <circle cx="318" cy="208" r="11" opacity="0.9"/>
+  </g>
+  <g fill="#fff" opacity="0.9">
+    <circle cx="221" cy="189" r="6"/>
+    <circle cx="288" cy="146" r="4"/>
+  </g>
+
+  <!-- Chaudron -->
+  <rect x="150" y="410" width="30" height="58" rx="10" fill="#141020"/>
+  <rect x="332" y="410" width="30" height="58" rx="10" fill="#141020"/>
+  <path d="M86 262 Q78 470 256 470 Q434 470 426 262 Z" fill="url(#fonte)"/>
+  <path d="M130 330 Q140 410 210 436" stroke="#ffffff2e" stroke-width="16" fill="none" stroke-linecap="round"/>
+  <ellipse cx="256" cy="262" rx="170" ry="36" fill="url(#potion)"/>
+  <ellipse cx="256" cy="262" rx="182" ry="42" fill="none" stroke="#5a4f80" stroke-width="20"/>
+
+  <!-- Étincelle magique dorée -->
+  <path d="M392 86 L404 128 L446 140 L404 152 L392 194 L380 152 L338 140 L380 128 Z" fill="url(#or)"/>
+  <path d="M440 236 L446 254 L464 260 L446 266 L440 284 L434 266 L416 260 L434 254 Z" fill="url(#or)" opacity="0.9"/>
+</svg>

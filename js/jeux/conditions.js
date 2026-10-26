@@ -109,7 +109,39 @@ Jeux.conditions = {
     { sortes: ['type', 'brille'], types: 3, nb: 9, exemples: 9, imbrique: true },
   ],
 
+  textes: {
+    intro: "Écris une règle pour ranger les ingrédients : SI quelque chose est vrai, ALORS on le range ici, SINON on le range là. Touche les points d'interrogation pour choisir.",
+    introDouble: 'Cette fois, la règle a deux conditions : SI, puis SINON SI, puis SINON.',
+    exemples: "J'ai commencé à ranger mes ingrédients. Trouve ma règle, puis écris-la pour ranger ceux du tapis !",
+    // La règle dite par la sorcière, à partir de la règle à trouver.
+    regle: ({ conds, dests }) => conds.length === 1
+      ? `Mets ${conds[0].groupe} ${RANGEMENTS[dests[0]].dans}, et tout le reste ${RANGEMENTS[dests[1]].dans}.`
+      : `Mets ${conds[0].groupe} ${RANGEMENTS[dests[0]].dans}. Pour les autres : ${conds[1].groupe} ${RANGEMENTS[dests[1]].dans}, et tout le reste ${RANGEMENTS[dests[2]].dans}.`,
+    incomplete: "Complète toute la règle : touche chaque point d'interrogation.",
+    erreurs: n => n === 1
+      ? "Un ingrédient n'est pas à la bonne place. Regarde-le bien, puis change ta règle !"
+      : `${n} ingrédients ne sont pas à la bonne place. Regarde-les bien, puis change ta règle !`,
+  },
+
+  // Tout ce que ce jeu peut dire (pour enregistrer les fichiers audio) : toutes les règles
+  // que la sorcière peut énoncer, avec tous les ingrédients et tous les rangements.
+  phrases() {
+    const T = this.textes;
+    const conds = conditionsPour(['type', 'taille', 'brille'], INGREDIENTS.map(i => i.e));
+    const regles = [
+      ...toutesLesRegles(conds, ['chaudron', 'bocal'], false),
+      ...toutesLesRegles(conds, ['chaudron', 'bocal', 'panier'], true),
+    ];
+    const maxErreurs = Math.max(...this.niveaux.map(c => c.nb));
+    return [
+      T.intro, T.introDouble, T.exemples, T.incomplete,
+      ...regles.map(T.regle),
+      ...Array.from({ length: maxErreurs }, (_, i) => T.erreurs(i + 1)),
+    ];
+  },
+
   lancerManche(zone, { config, premiere, consigne, enCours, reussi }) {
+    const T = Jeux.conditions.textes;
     const tri = genererTri(config);
     const { conds, destIds, cible, tapis, exemples } = tri;
     const nbLignes = cible.conds.length + 1;
@@ -118,14 +150,7 @@ Jeux.conditions = {
     let occupe = false;
 
     // La parole de la sorcière
-    let texte;
-    if (config.exemples) {
-      texte = "J'ai commencé à ranger mes ingrédients. Trouve ma règle, puis écris-la pour ranger ceux du tapis !";
-    } else if (cible.conds.length === 1) {
-      texte = `Mets ${cible.conds[0].groupe} ${RANGEMENTS[cible.dests[0]].dans}, et tout le reste ${RANGEMENTS[cible.dests[1]].dans}.`;
-    } else {
-      texte = `Mets ${cible.conds[0].groupe} ${RANGEMENTS[cible.dests[0]].dans}. Pour les autres : ${cible.conds[1].groupe} ${RANGEMENTS[cible.dests[1]].dans}, et tout le reste ${RANGEMENTS[cible.dests[2]].dans}.`;
-    }
+    const texte = config.exemples ? T.exemples : T.regle(cible);
     const bulle = el('div', { class: 'parole' }, [el('span', { class: 'qui', text: '🧙‍♀️' }), el('p', { text: '« ' + texte + ' »' })]);
 
     // Les exemples déjà rangés
@@ -204,7 +229,7 @@ Jeux.conditions = {
       if (occupe) return;
       if (regle.conds.includes(null) || regle.dests.includes(null)) {
         Son.oups();
-        Son.dire('Complète toute la règle : touche chaque point d\'interrogation.');
+        Son.dire(T.incomplete);
         editeur.querySelectorAll('.vide').forEach(secouer);
         return;
       }
@@ -232,9 +257,7 @@ Jeux.conditions = {
       }
       lignes.forEach(l => l.classList.remove('active'));
       if (!erreurs) return reussi();
-      Son.dire(erreurs === 1
-        ? "Un ingrédient n'est pas à la bonne place. Regarde-le bien, puis change ta règle !"
-        : `${erreurs} ingrédients ne sont pas à la bonne place. Regarde-les bien, puis change ta règle !`);
+      Son.dire(T.erreurs(erreurs));
       await attendre(3000);
       if (!enCours()) return;
       remettreSurLeTapis();
@@ -255,11 +278,6 @@ Jeux.conditions = {
       blocBacs,
     ].filter(Boolean));
 
-    const debut = premiere
-      ? (cible.conds.length > 1
-        ? 'Cette fois, la règle a deux conditions : SI, puis SINON SI, puis SINON. '
-        : 'Écris une règle pour ranger les ingrédients : SI quelque chose est vrai, ALORS on le range ici, SINON on le range là. Touche les points d\'interrogation pour choisir. ')
-      : '';
-    consigne(debut + texte);
+    consigne((premiere ? (cible.conds.length > 1 ? T.introDouble : T.intro) + ' ' : '') + texte);
   },
 };

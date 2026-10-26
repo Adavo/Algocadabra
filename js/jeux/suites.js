@@ -35,6 +35,15 @@ Jeux.suites = {
     },
   ],
 
+  textes: {
+    suivante: 'Oui ! Et la suivante ?',
+  },
+
+  // Tout ce que ce jeu peut dire (pour enregistrer les fichiers audio).
+  phrases() {
+    return [...this.niveaux.flatMap(n => [n.intro, n.rappel]), this.textes.suivante];
+  },
+
   lancerManche(zone, { decor, config, premiere, consigne, reussi }) {
     const motif = config.motifs[hasard(config.motifs.length)];
     const lettres = [...new Set(motif)];
@@ -89,7 +98,7 @@ Jeux.suites = {
           prochain++;
           if (prochain === reponses.length) return reussi();
           Son.pop();
-          Son.dire('Oui ! Et la suivante ?');
+          Son.dire(Jeux.suites.textes.suivante);
           marquerActif();
         },
       });

@@ -19,7 +19,28 @@ Jeux.chemin = {
     { taille: 5, min: 6, max: 7, obstacles: 4 },
   ],
 
+  textes: {
+    pasDeFleches: "Choisis d'abord des flèches !",
+    horsPlateau: 'Oups, on sort du plateau !',
+    contreObstacle: d => `Oups, on ne peut pas passer sur ${d.nomObstacles} !`,
+    corrige: 'Regarde la flèche qui clignote et corrige-la.',
+    presque: d => `Presque ! Il manque des flèches pour arriver ${jusqua(d.nomBut)}.`,
+    intro: d => `Aide ${d.nomHeros} à aller ${jusqua(d.nomBut)}. Choisis les flèches, puis appuie sur le bouton vert.`,
+    encore: d => `Encore ! Emmène ${d.nomHeros} ${jusqua(d.nomBut)}.`,
+    obstacles: d => `Attention : ${d.nomObstacles} bloquent le chemin, on ne peut pas passer dessus. Il faut faire le tour !`,
+  },
+
+  // Tout ce que ce jeu peut dire (pour enregistrer les fichiers audio), pour chaque décor.
+  phrases() {
+    const T = this.textes;
+    return [
+      T.pasDeFleches, T.horsPlateau, T.corrige,
+      ...DECORS.flatMap(d => [T.contreObstacle(d), T.presque(d), T.intro(d), T.encore(d), T.obstacles(d)]),
+    ];
+  },
+
   lancerManche(zone, { decor, config, premiere, consigne, enCours, reussi }) {
+    const T = Jeux.chemin.textes;
     const n = config.taille;
     const { depart, arrivee, bloques } = genererTerrain(config);
     const programme = [];
@@ -66,7 +87,7 @@ Jeux.chemin = {
 
     async function executer() {
       if (occupe) return;
-      if (!programme.length) { Son.dire('Choisis d\'abord des flèches !'); return; }
+      if (!programme.length) { Son.dire(T.pasDeFleches); return; }
       occupe = true;
       zone.classList.add('occupe');
       let p = { ...depart };
@@ -80,8 +101,7 @@ Jeux.chemin = {
         if (dehors || bloques.has(q.x + ',' + q.y)) {
           secouer(heros);
           Son.oups();
-          Son.dire((dehors ? 'Oups, on sort du plateau !' : `Oups, on ne peut pas passer sur ${decor.nomObstacles} !`)
-            + ' Regarde la flèche qui clignote et corrige-la.');
+          Son.dire((dehors ? T.horsPlateau : T.contreObstacle(decor)) + ' ' + T.corrige);
           await attendre(1800);
           return recommencer(i);
         }
@@ -96,7 +116,7 @@ Jeux.chemin = {
       await attendre(500);
       if (!enCours()) return;
       Son.oups();
-      Son.dire('Presque ! Il manque des flèches pour arriver ' + jusqua(decor.nomBut) + '.');
+      Son.dire(T.presque(decor));
       await attendre(1200);
       recommencer(-1);
     }
@@ -128,11 +148,6 @@ Jeux.chemin = {
       ])]),
     );
 
-    const texteObstacles = config.obstacles
-      ? ` Attention : ${decor.nomObstacles} bloquent le chemin, on ne peut pas passer dessus. Il faut faire le tour !`
-      : '';
-    consigne((premiere
-      ? `Aide ${decor.nomHeros} à aller ${jusqua(decor.nomBut)}. Choisis les flèches, puis appuie sur le bouton vert.`
-      : `Encore ! Emmène ${decor.nomHeros} ${jusqua(decor.nomBut)}.`) + texteObstacles);
+    consigne((premiere ? T.intro(decor) : T.encore(decor)) + (config.obstacles ? ' ' + T.obstacles(decor) : ''));
   },
 };

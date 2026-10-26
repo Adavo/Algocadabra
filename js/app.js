@@ -44,19 +44,23 @@ function consigne(texte) {
   Son.dire(texte);
 }
 
-// Comme un jeu vidéo : chaque écran tient toujours dans la fenêtre, sans défilement.
-// Le contenu de <main> est mis dans un cadre .ajuste ; s'il est plus grand que la place
-// disponible (petit téléphone, jeu chargé), il est réduit juste ce qu'il faut.
-const observateur = new ResizeObserver(entrees => {
-  for (const e of entrees) ajuster(e.target.closest('main'));
-});
-// En plus : dès que le contenu de l'écran change (manche suivante, choix qui s'ouvrent…).
+// Comme un jeu vidéo : chaque écran remplit la fenêtre, sans défilement.
+// Le contenu de <main> est dessiné sur une largeur de référence (900 px au plus), puis agrandi
+// ou réduit avec « zoom » pour remplir l'écran. Contrairement à une mise à l'échelle d'image,
+// zoom redessine tout à la bonne taille : les textes et les dessins restent nets sur iPad.
+const LARGEUR_DESSIN = 900;
+const ZOOM_MAX = 2;
+
+// Dès que le contenu de l'écran change (manche suivante, choix qui s'ouvrent…), on réajuste.
 let ajustementPrevu = false;
-const surveillant = new MutationObserver(() => {
-  if (ajustementPrevu) return;
+const surveillant = new MutationObserver(mutations => {
+  const contenu = racine.querySelector(':scope > main > .ajuste');
+  // Nos propres réglages de taille sur le cadre ne comptent pas.
+  if (ajustementPrevu || mutations.every(m => m.target === contenu)) return;
   ajustementPrevu = true;
   setTimeout(() => { ajustementPrevu = false; ajusterEcran(); }, 0);
 });
+const observateur = new ResizeObserver(() => ajusterEcran());
 
 function ajuster(main) {
   const contenu = main && main.querySelector(':scope > .ajuste');
@@ -64,8 +68,11 @@ function ajuster(main) {
   const s = getComputedStyle(main);
   const hauteur = main.clientHeight - parseFloat(s.paddingTop) - parseFloat(s.paddingBottom);
   const largeur = main.clientWidth - parseFloat(s.paddingLeft) - parseFloat(s.paddingRight);
-  const echelle = Math.min(1, hauteur / contenu.scrollHeight, largeur / contenu.scrollWidth);
-  contenu.style.transform = echelle < 0.999 ? `scale(${echelle})` : '';
+  // On mesure le dessin à sa taille de référence, puis on choisit le zoom qui remplit l'écran.
+  contenu.style.zoom = '1';
+  contenu.style.width = Math.min(largeur, LARGEUR_DESSIN) + 'px';
+  const zoom = Math.min(ZOOM_MAX, largeur / contenu.scrollWidth, hauteur / contenu.scrollHeight);
+  contenu.style.zoom = String(Math.floor(zoom * 1000) / 1000);
 }
 
 function nouvelEcran(...enfants) {
@@ -73,15 +80,20 @@ function nouvelEcran(...enfants) {
   observateur.disconnect();
   surveillant.disconnect();
   for (const e of enfants) {
-    if (e.tagName === 'MAIN') e.replaceChildren(el('div', { class: 'ajuste' }, [...e.childNodes]));
+    if (e.tagName !== 'MAIN') continue;
+    // Les décors « .plein-ecran » (murs, fenêtre, sol…) restent collés aux bords, hors du cadre ajusté.
+    const decors = [...e.children].filter(c => c.classList.contains('plein-ecran'));
+    const reste = [...e.childNodes].filter(c => !decors.includes(c));
+    e.replaceChildren(...decors, el('div', { class: 'ajuste' }, reste));
   }
   racine.replaceChildren(...enfants);
   // On surveille une fois dans la page : le jeu ajoute son contenu juste après, et il change en cours de partie.
   const main = racine.querySelector(':scope > main');
   if (main) {
     observateur.observe(main);
-    observateur.observe(main.firstChild);
-    surveillant.observe(main.firstChild, { childList: true, subtree: true, characterData: true });
+    surveillant.observe(main.querySelector(':scope > .ajuste'), {
+      childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['class'],
+    });
   }
   ajusterEcran();
   requestAnimationFrame(ajusterEcran);
@@ -133,13 +145,13 @@ function ecranAccueil(groupe = groupeCourant) {
   const vapeur = el('div', { class: 'vapeur' });
 
   if (!groupe) {
-    derniereConsigne = 'Bienvenue chez la sorcière ! Dans son chaudron magique, il y a des jeux. Choisis : les jeux pour les petits, ou les jeux pour les grands.';
+    derniereConsigne = TEXTES.bienvenue;
     vapeur.append(...Object.entries(GROUPES).map(([id, g], i) => el('button', {
       class: 'bulle grosse-bulle', style: `--d:${i * 0.2}s`,
-      onclick: () => { Son.pop(); ecranAccueil(id); consigne(id === 'petits' ? 'Les jeux pour les petits ! Choisis une bulle.' : 'Les jeux pour les grands ! Choisis une bulle.'); },
+      onclick: () => { Son.pop(); ecranAccueil(id); consigne(TEXTES.groupe[id]); },
     }, [el('span', { class: 'emoji-bulle', text: g.icone }), el('span', { class: 'nom', text: g.nom }), el('small', { text: g.age })])));
   } else {
-    derniereConsigne = 'Choisis une bulle du chaudron.';
+    derniereConsigne = TEXTES.choisirBulle;
     vapeur.append(...GROUPES[groupe].jeux.map((id, i) => {
       const jeu = Jeux[id];
       return el('button', {
@@ -159,21 +171,19 @@ function ecranAccueil(groupe = groupeCourant) {
 
   nouvelEcran(
     barre(groupe ? () => ecranAccueil(null) : null, groupe ? GROUPES[groupe].icone + ' ' + GROUPES[groupe].nom : '✨ Algocadabra ✨'),
+    // La pièce remplit tout l'écran : le décor « plein-ecran » reste collé aux bords,
+    // et seul le chaudron avec ses bulles est agrandi ou réduit au milieu.
     el('main', { class: 'maison' }, [
-      el('div', { class: 'piece' }, [
-        el('div', { class: 'fenetre', 'aria-hidden': 'true' }, [el('span', { text: '🌙' }), el('span', { class: 'chauve-souris', text: '🦇' })]),
-        el('div', { class: 'etagere', 'aria-hidden': 'true' }, ['🧪', '📕', '🔮', '🕯️', '⚗️', '🍄', '📗'].map(e => el('span', { text: e }))),
-        el('div', { class: 'toile', 'aria-hidden': 'true', text: '🕸️' }),
-        el('div', { class: 'scene' }, [
-          el('button', {
-            class: 'sorciere', 'aria-label': 'La sorcière', text: '🧙‍♀️',
-            onclick: () => { Son.pop(); Son.dire(derniereConsigne); },
-          }),
-          chaudron,
-          el('div', { class: 'chat', 'aria-hidden': 'true', text: '🐈‍⬛' }),
-        ]),
-        el('div', { class: 'plancher', 'aria-hidden': 'true' }),
-      ]),
+      el('div', { class: 'fenetre plein-ecran', 'aria-hidden': 'true' }, [el('span', { text: '🌙' }), el('span', { class: 'chauve-souris', text: '🦇' })]),
+      el('div', { class: 'etagere plein-ecran', 'aria-hidden': 'true' }, ['🧪', '📕', '🔮', '🕯️', '⚗️', '🍄', '📗'].map(e => el('span', { text: e }))),
+      el('div', { class: 'toile plein-ecran', 'aria-hidden': 'true', text: '🕸️' }),
+      el('div', { class: 'plancher plein-ecran', 'aria-hidden': 'true' }),
+      el('button', {
+        class: 'sorciere plein-ecran', 'aria-label': 'La sorcière', text: '🧙‍♀️',
+        onclick: () => { Son.pop(); Son.dire(derniereConsigne); },
+      }),
+      el('div', { class: 'chat plein-ecran', 'aria-hidden': 'true', text: '🐈‍⬛' }),
+      chaudron,
     ]),
   );
 }
@@ -181,7 +191,7 @@ function ecranAccueil(groupe = groupeCourant) {
 // ---------- Un jeu : choisir un niveau ----------
 
 function ecranNiveaux(jeu) {
-  consigne(jeu.nom + '. Choisis un niveau.');
+  consigne(TEXTES.choisirNiveau(jeu));
   const faits = Progres.reussis(jeu);
   const boutons = jeu.niveaux.map((_, i) => {
     const ouvert = i <= faits;
@@ -189,7 +199,7 @@ function ecranNiveaux(jeu) {
       class: 'niveau' + (i < faits ? ' fait' : '') + (ouvert ? '' : ' ferme'),
       'aria-label': 'Niveau ' + (i + 1) + (ouvert ? '' : ', fermé'),
       onclick: () => {
-        if (!ouvert) { Son.oups(); Son.dire("Réussis d'abord le niveau d'avant !"); return; }
+        if (!ouvert) { Son.oups(); Son.dire(TEXTES.niveauFerme); return; }
         Son.pop();
         lancerNiveau(jeu, i);
       },
@@ -249,7 +259,7 @@ function finNiveau(jeu, niveau) {
   Son.fete();
   confettis(MAGIE);
   const suivant = niveau + 1 < jeu.niveaux.length;
-  consigne(suivant ? 'Bravo, tu as gagné une étoile ! On continue ?' : 'Bravo ! Tu as fini tous les niveaux de ce jeu !');
+  consigne(suivant ? TEXTES.etoile : TEXTES.toutFini);
   const fenetre = el('div', { class: 'fete' }, [
     el('div', { class: 'boite-fete' }, [
       el('div', { class: 'grosse-etoile', text: '⭐' }),

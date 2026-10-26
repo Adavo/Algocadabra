@@ -5,3 +5,7 @@
 Thumbs.db
 desktop.ini
 .DS_Store
+
+# Modèles de voix Piper (téléchargés par outils/voix/generer-voix.py, ~60 Mo)
+outils/voix/modeles/
+__pycache__/

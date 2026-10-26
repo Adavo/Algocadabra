@@ -5,6 +5,7 @@
   const STYLES = ['css/style.css'];
   const SCRIPTS = [
     'js/outils.js',
+    'js/phrases.js',
     'js/son.js',
     'js/decors.js',
     'js/jeux/grille.js',

@@ -69,7 +69,31 @@ Jeux.labyrinthe = {
     { salles: 5, blocsMin: 8, blocsMaxi: 11, marge: 0, cle: true, ouvertures: 2 },
   ],
 
+  textes: {
+    pasDeBlocs: "Ajoute d'abord des blocs !",
+    mur: 'Aïe, un mur ! Le bloc en rouge ne marche pas. Corrige ton programme.',
+    sortieFermee: "La sortie est fermée : il faut d'abord prendre la clé !",
+    pasSortie: "Le programme est fini mais la chauve-souris n'est pas sortie. Continue ton programme !",
+    plusDeBlocs: "Tu as utilisé tous tes blocs ! Touche le nombre d'un bloc pour le répéter plusieurs fois.",
+    intro: blocs => `Fais sortir la chauve-souris de la grotte, jusqu'à la lune. Tu n'as que ${blocs} blocs : touche le nombre d'un bloc pour le répéter plusieurs fois. Prépare tout le programme, puis appuie sur le bouton vert.`,
+    encore: blocs => `Une nouvelle grotte ! Tu as ${blocs} blocs.`,
+    cle: "Attention : la sortie est fermée, il faut d'abord prendre la clé.",
+  },
+
+  // Tout ce que ce jeu peut dire (pour enregistrer les fichiers audio),
+  // pour chaque nombre de blocs possible d'un niveau à l'autre.
+  phrases() {
+    const T = this.textes;
+    const nombres = new Set(this.niveaux.flatMap(c =>
+      Array.from({ length: c.blocsMaxi - c.blocsMin + 1 }, (_, i) => c.blocsMin + i + c.marge)));
+    return [
+      T.pasDeBlocs, T.mur, T.sortieFermee, T.pasSortie, T.plusDeBlocs, T.cle,
+      ...[...nombres].flatMap(b => [T.intro(b), T.encore(b)]),
+    ];
+  },
+
   lancerManche(zone, { config, premiere, consigne, enCours, reussi }) {
+    const T = Jeux.labyrinthe.textes;
     const lab = genererLabyrinthe(config);
     const { n, murs, depart, sortie, cle, blocsMax } = lab;
     const programme = [];
@@ -120,7 +144,7 @@ Jeux.labyrinthe = {
 
     async function executer() {
       if (occupe) return;
-      if (!programme.length) { Son.dire("Ajoute d'abord des blocs !"); return; }
+      if (!programme.length) { Son.dire(T.pasDeBlocs); return; }
       occupe = true;
       zone.classList.add('occupe');
       const r = await jouerBlocs({
@@ -137,11 +161,11 @@ Jeux.labyrinthe = {
       Son.oups();
       if (r.fin === 'mur') {
         secouer(heros);
-        Son.dire('Aïe, un mur ! Le bloc en rouge ne marche pas. Corrige ton programme.');
+        Son.dire(T.mur);
       } else if (memeCase(r.pos, sortie)) {
-        Son.dire("La sortie est fermée : il faut d'abord prendre la clé !");
+        Son.dire(T.sortieFermee);
       } else {
-        Son.dire("Le programme est fini mais la chauve-souris n'est pas sortie. Continue ton programme !");
+        Son.dire(T.pasSortie);
       }
       await attendre(1800);
       reinitialiser(r.fin === 'mur' ? r.bloc : -1);
@@ -153,7 +177,7 @@ Jeux.labyrinthe = {
         if (occupe) return;
         if (programme.length >= blocsMax) {
           Son.oups();
-          Son.dire('Tu as utilisé tous tes blocs ! Touche le nombre d\'un bloc pour le répéter plusieurs fois.');
+          Son.dire(T.plusDeBlocs);
           return;
         }
         programme.push({ dir: cleDir, fois: 1 });
@@ -182,9 +206,6 @@ Jeux.labyrinthe = {
       ]),
     );
 
-    const texteCle = cle ? " Attention : la sortie est fermée, il faut d'abord prendre la clé." : '';
-    consigne(premiere
-      ? `Fais sortir la chauve-souris de la grotte, jusqu'à la lune. Tu n'as que ${blocsMax} blocs : touche le nombre d'un bloc pour le répéter plusieurs fois. Prépare tout le programme, puis appuie sur le bouton vert.${texteCle}`
-      : `Une nouvelle grotte ! Tu as ${blocsMax} blocs.${texteCle}`);
+    consigne((premiere ? T.intro(blocsMax) : T.encore(blocsMax)) + (cle ? ' ' + T.cle : ''));
   },
 };

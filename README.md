@@ -68,3 +68,27 @@ Le bouton ⚙️ en haut à droite ouvre l'espace parents : son, volume de la vo
 remise à zéro de la progression, et ce que chaque jeu apprend. Pour y entrer, il faut taper sur le pavé de chiffres la réponse
 à une question de culture générale (une date) tirée au hasard parmi 5, trop difficile pour les enfants et jamais lue à voix haute.
 Les questions sont dans `js/parents.js`.
+
+## Voix enregistrée (Piper)
+
+Les consignes peuvent être jouées depuis des fichiers MP3 enregistrés avec [Piper](https://github.com/rhasspy/piper),
+une voix de synthèse française gratuite qui tourne sur l'ordinateur, sans compte. Chaque phrase qui a son fichier
+est jouée depuis ce fichier ; les autres sont lues par la voix du navigateur.
+
+```bash
+python -m pip install -r outils/voix/requirements.txt   # une seule fois
+python outils/voix/generer-voix.py                       # à relancer quand une phrase change
+```
+
+- `node outils/voix/lister-phrases.js` affiche toutes les phrases que le site peut dire (environ 400).
+- Les textes sont dans `js/phrases.js` (général) et dans `textes` / `phrases()` de chaque jeu :
+  une phrase ajoutée là est automatiquement enregistrée au prochain lancement du script.
+- Options : `--voix fr_FR-upmc-medium` pour une autre voix, `--lenteur 1.2` pour parler plus lentement,
+  `--tout` pour tout réenregistrer.
+- Les fichiers vont dans `voix/fichiers/` avec `voix/catalogue.json` ; la voix téléchargée (~60 Mo)
+  reste dans `outils/voix/modeles/` (non publiée).
+
+## Icône
+
+`icones/icone.svg` est l'icône (le chaudron), avec ses versions PNG pour l'onglet du navigateur
+(`favicon-32.png`) et l'écran d'accueil de l'iPad (`apple-touch-icon.png`, 180 × 180).

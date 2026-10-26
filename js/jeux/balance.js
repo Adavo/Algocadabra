@@ -19,7 +19,29 @@ Jeux.balance = {
     { nb: 6, max: 15 },
   ],
 
+  textes: {
+    intro: "Les potions ont toutes la même taille, mais pas le même poids. Range-les de la plus légère à la plus lourde. Touche une potion, puis un plateau de la balance pour la peser. Quand tu sais, pose-les sur l'étagère et appuie sur Vérifier.",
+    encore: 'Range les potions de la plus légère à la plus lourde.',
+    maxPesees: max => `Attention, tu n'as que ${max} pesées !`,
+    trop: max => `Oh non, plus de ${max} pesées ! La potion s'est évaporée. On recommence avec une méthode : cherche d'abord la plus légère.`,
+    bienPlacees: (bien, total) => `${bien} potion${bien > 1 ? 's sont' : ' est'} à la bonne place sur ${total}. Utilise la balance pour vérifier !`,
+  },
+
+  // Tout ce que ce jeu peut dire (pour enregistrer les fichiers audio),
+  // pour chaque limite de pesées et chaque résultat possible.
+  phrases() {
+    const T = this.textes;
+    const limites = this.niveaux.filter(c => c.max).map(c => c.max);
+    const totaux = [...new Set(this.niveaux.map(c => c.nb))];
+    return [
+      T.intro, T.encore,
+      ...limites.flatMap(m => [T.maxPesees(m), T.trop(m)]),
+      ...totaux.flatMap(n => Array.from({ length: n }, (_, bien) => T.bienPlacees(bien, n))),
+    ];
+  },
+
   lancerManche(zone, { config, premiere, consigne, enCours, reussi, recommencer }) {
+    const T = Jeux.balance.textes;
     const poids = melanger(Array.from({ length: config.nb }, (_, i) => i + 1));
     const potions = melanger(COULEURS_POTIONS).slice(0, config.nb).map(([couleur, nom], i) => ({ couleur, nom, poids: poids[i] }));
     // Où est chaque potion : 'reserve', 'g', 'd' (plateaux) ou un numéro de case de l'étagère.
@@ -98,7 +120,7 @@ Jeux.balance = {
     async function trop() {
       fini = true;
       Son.oups();
-      Son.dire(`Oh non, plus de ${config.max} pesées ! La potion s'est évaporée. On recommence avec une méthode : cherche d'abord la plus légère.`);
+      Son.dire(T.trop(config.max));
       await attendre(4000);
       if (enCours()) recommencer();
     }
@@ -126,7 +148,7 @@ Jeux.balance = {
         if (bien === potions.length) { fini = true; return reussi(); }
         Son.oups();
         secouer(etagere);
-        Son.dire(`${bien} potion${bien > 1 ? 's sont' : ' est'} à la bonne place sur ${potions.length}. Utilise la balance pour vérifier !`);
+        Son.dire(T.bienPlacees(bien, potions.length));
       },
     });
     const etagere = el('div', { class: 'etagere-rangement' }, [
@@ -146,9 +168,6 @@ Jeux.balance = {
       verifier,
     );
 
-    const texteMax = config.max ? ` Attention, tu n'as que ${config.max} pesées !` : '';
-    consigne((premiere
-      ? 'Les potions ont toutes la même taille, mais pas le même poids. Range-les de la plus légère à la plus lourde. Touche une potion, puis un plateau de la balance pour la peser. Quand tu sais, pose-les sur l\'étagère et appuie sur Vérifier.'
-      : 'Range les potions de la plus légère à la plus lourde.') + texteMax);
+    consigne((premiere ? T.intro : T.encore) + (config.max ? ' ' + T.maxPesees(config.max) : ''));
   },
 };
