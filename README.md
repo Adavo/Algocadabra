@@ -36,6 +36,8 @@ sans jamais étiqueter un univers « pour filles » ou « pour garçons ».
   à partir du premier toucher de l'enfant. Elle baisse automatiquement pendant que la voix lit une consigne.
 - Le son (tout couper, volume de la voix, musique et son volume) se règle dans l'espace parents ; les enfants n'ont que 👂 pour réécouter la consigne.
 - La musique s'arrête quand la page est cachée (autre onglet, tablette en veille).
+- iPad / iPhone : le son se débloque à la fin du premier toucher (règle de Safari). Depuis iOS 16.4, il joue
+  même en mode silencieux ; sur un iOS plus ancien, désactiver le mode silencieux (cloche du centre de contrôle).
 - La voix des consignes est choisie automatiquement parmi les voix françaises de l'appareil, en préférant
   les voix « naturelles » (Edge : « Natural », Chrome : « Google français », iPad/Mac : « Premium »).
   Un parent peut en choisir une autre dans l'espace parents. Les consignes sont lues phrase par phrase.

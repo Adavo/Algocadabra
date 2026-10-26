@@ -12,7 +12,11 @@ const Son = (() => {
 
   function contexte() {
     ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
-    if (ctx.state === 'suspended' && !document.hidden) ctx.resume();
+    // iOS met le son en « interrupted » (autre appli, appel, veille) : on le relance aussi dans ce cas.
+    if (ctx.state !== 'running' && !document.hidden) {
+      const reprise = ctx.resume();
+      if (reprise && reprise.catch) reprise.catch(() => {});
+    }
     return ctx;
   }
 
@@ -255,13 +259,39 @@ const Son = (() => {
   })();
 
   // Les navigateurs n'autorisent le son qu'après un premier geste de l'enfant.
-  document.addEventListener('pointerdown', () => Musique.demarrer());
-  document.addEventListener('keydown', () => Musique.demarrer());
+  // Sur iPad et iPhone, le son ne s'ouvre qu'à la FIN d'un toucher (ou sur un clic), jamais au début :
+  // on débloque donc l'audio et la voix à chacun de ces gestes.
+  let voixDebloquee = false;
+  function debloquer() {
+    // Safari 16.4+ : jouer le son même quand l'iPad est en mode silencieux, comme une vidéo.
+    if (navigator.audioSession) {
+      try { navigator.audioSession.type = 'playback'; } catch (e) { /* ancien Safari */ }
+    }
+    try {
+      // Un son vide joué pendant le geste : c'est ce qui réveille vraiment l'audio sur iOS.
+      const c = contexte();
+      const s = c.createBufferSource();
+      s.buffer = c.createBuffer(1, 1, 22050);
+      s.connect(c.destination);
+      s.start(0);
+    } catch (e) { /* pas de son, pas grave */ }
+    if (!voixDebloquee && actif && 'speechSynthesis' in window) {
+      // Une première phrase muette pendant un geste autorise ensuite la voix (iOS).
+      const u = new SpeechSynthesisUtterance(' ');
+      u.volume = 0;
+      speechSynthesis.speak(u);
+      voixDebloquee = true;
+    }
+    Musique.demarrer();
+  }
+  for (const geste of ['pointerup', 'touchend', 'click', 'keydown']) {
+    document.addEventListener(geste, debloquer, { passive: true });
+  }
   // Pas de musique quand la page est cachée (autre onglet, tablette en veille).
   document.addEventListener('visibilitychange', () => {
     if (!ctx) return;
     if (document.hidden) ctx.suspend();
-    else ctx.resume();
+    else contexte(); // sur iOS, si ça ne repart pas tout seul, le prochain toucher le relancera
   });
 
   return {
