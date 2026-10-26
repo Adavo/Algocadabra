@@ -44,11 +44,56 @@ function consigne(texte) {
   Son.dire(texte);
 }
 
+// Comme un jeu vidéo : chaque écran tient toujours dans la fenêtre, sans défilement.
+// Le contenu de <main> est mis dans un cadre .ajuste ; s'il est plus grand que la place
+// disponible (petit téléphone, jeu chargé), il est réduit juste ce qu'il faut.
+const observateur = new ResizeObserver(entrees => {
+  for (const e of entrees) ajuster(e.target.closest('main'));
+});
+// En plus : dès que le contenu de l'écran change (manche suivante, choix qui s'ouvrent…).
+let ajustementPrevu = false;
+const surveillant = new MutationObserver(() => {
+  if (ajustementPrevu) return;
+  ajustementPrevu = true;
+  setTimeout(() => { ajustementPrevu = false; ajusterEcran(); }, 0);
+});
+
+function ajuster(main) {
+  const contenu = main && main.querySelector(':scope > .ajuste');
+  if (!contenu) return;
+  const s = getComputedStyle(main);
+  const hauteur = main.clientHeight - parseFloat(s.paddingTop) - parseFloat(s.paddingBottom);
+  const largeur = main.clientWidth - parseFloat(s.paddingLeft) - parseFloat(s.paddingRight);
+  const echelle = Math.min(1, hauteur / contenu.scrollHeight, largeur / contenu.scrollWidth);
+  contenu.style.transform = echelle < 0.999 ? `scale(${echelle})` : '';
+}
+
 function nouvelEcran(...enfants) {
   partie++;
+  observateur.disconnect();
+  surveillant.disconnect();
+  for (const e of enfants) {
+    if (e.tagName === 'MAIN') e.replaceChildren(el('div', { class: 'ajuste' }, [...e.childNodes]));
+  }
   racine.replaceChildren(...enfants);
-  window.scrollTo(0, 0);
+  // On surveille une fois dans la page : le jeu ajoute son contenu juste après, et il change en cours de partie.
+  const main = racine.querySelector(':scope > main');
+  if (main) {
+    observateur.observe(main);
+    observateur.observe(main.firstChild);
+    surveillant.observe(main.firstChild, { childList: true, subtree: true, characterData: true });
+  }
+  ajusterEcran();
+  requestAnimationFrame(ajusterEcran);
 }
+
+function ajusterEcran() {
+  ajuster(racine.querySelector(':scope > main'));
+}
+window.addEventListener('resize', ajusterEcran);
+window.addEventListener('orientationchange', () => setTimeout(ajusterEcran, 300));
+// La police arrondie arrive un peu après : les textes changent de taille.
+if (document.fonts) document.fonts.ready.then(ajusterEcran);
 
 function etoiles(nb, total) {
   return el('div', { class: 'etoiles', 'aria-label': nb + ' sur ' + total },

@@ -50,7 +50,23 @@ button {
 }
 button:focus-visible, [role="button"]:focus-visible { outline: 4px solid var(--or); outline-offset: 3px; }
 
-main { max-width: 900px; margin: 0 auto; padding: 8px 16px calc(40px + env(safe-area-inset-bottom, 0px)); }
+/* Comme un jeu vidéo : la page ne défile jamais (ni rebond sur iPad).
+   La barre du haut garde sa taille, l'écran du dessous prend tout le reste ;
+   s'il est trop grand, app.js le réduit pour qu'il tienne entier (voir ajuster()). */
+html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
+body { position: fixed; inset: 0; }
+#app { height: 100%; display: flex; flex-direction: column; }
+#app > .barre { flex-shrink: 0; width: 100%; }
+main {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  overflow: hidden;
+  padding: 8px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+}
+.ajuste { transform-origin: top center; }
 
 /* ---------- Barre du haut ---------- */
 
@@ -163,6 +179,8 @@ main { max-width: 900px; margin: 0 auto; padding: 8px 16px calc(40px + env(safe-
 .section-parents h3 { margin: 0 0 8px; font-size: 1.2rem; }
 .section-parents p { line-height: 1.5; margin: 8px 0; }
 .reglage { margin: 12px 0; }
+.reglage.centre { text-align: center; }
+.conseil-voix:empty { display: none; }
 .reglage > label { font-weight: 800; display: block; margin-bottom: 6px; }
 .case-a-cocher { display: flex !important; align-items: center; gap: 8px; cursor: pointer; }
 .case-a-cocher input { width: 22px; height: 22px; accent-color: var(--vert); }
@@ -298,10 +316,10 @@ main { max-width: 900px; margin: 0 auto; padding: 8px 16px calc(40px + env(safe-
 
 /* ---------- Écran titre ---------- */
 
-.titre {
+.titre { position: relative; max-width: none; }
+.titre > .ajuste {
   position: relative;
-  min-height: 100vh;
-  min-height: 100dvh;
+  min-height: 100%;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 10px;
   text-align: center;

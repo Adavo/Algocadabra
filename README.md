@@ -44,6 +44,9 @@ sans jamais étiqueter un univers « pour filles » ou « pour garçons ».
   les voix « naturelles » (Edge : « Natural », Chrome : « Google français », iPad/Mac : « Premium »).
   Un parent peut en choisir une autre dans l'espace parents. Les consignes sont lues phrase par phrase.
 
+Comme dans un jeu vidéo, la page ne défile jamais : chaque écran est réduit automatiquement s'il est trop grand
+pour la fenêtre (`ajuster()` dans `js/app.js`).
+
 Les labyrinthes, terrains et sorts sont générés au hasard : chaque partie est différente.
 La progression est gardée dans le navigateur (localStorage).
 

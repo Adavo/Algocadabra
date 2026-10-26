@@ -154,7 +154,7 @@ function afficherEspace(boite, fermer) {
     section('🎛️ Réglages', [
       reglagesSon,
       choixDeLaVoix(),
-      el('div', { class: 'reglage' }, [effacer]),
+      el('div', { class: 'reglage centre' }, [effacer]),
     ]),
     section('📖 À propos', [
       el('p', { text: "Algocadabra fait découvrir la pensée algorithmique. Toutes les consignes sont dites à voix haute (bouton 👂 pour les répéter) : les plus jeunes n'ont pas besoin de savoir lire." }),
@@ -179,9 +179,7 @@ function choixDeLaVoix() {
     liste.value = voix.some(v => v.voiceURI === Son.voixParent) ? Son.voixParent : '';
     conseil.textContent = !voix.length
       ? "Ce navigateur n'a pas de voix française : les consignes ne seront pas lues."
-      : voix.some(naturelle)
-        ? '⭐ = voix naturelle, la moins « robot ».'
-        : "Ce navigateur n'a que des voix assez « robot ». Pour une voix bien plus naturelle : ouvrez le site avec Microsoft Edge (voix « Natural ») ou Google Chrome. Sur iPad ou Mac : Réglages › Accessibilité › Contenu énoncé › Voix › Français, puis téléchargez une voix « Premium » ou « Améliorée ».";
+      : voix.some(naturelle) ? '⭐ = voix naturelle, la moins « robot ».' : '';
   }
   remplir();
   // Une seule liste à jour à la fois.
