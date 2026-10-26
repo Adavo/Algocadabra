@@ -1,7 +1,10 @@
 // Navigation : la maison de la sorcière → le chaudron (jeux) → niveaux → jeu.
 
 const GROUPES = {
-  petits: { nom: 'Pour les petits', icone: '🐣', age: 'dès 4 ans', jeux: ['suites', 'chemin', 'etapes', 'tri'] },
+  petits: {
+    nom: 'Pour les petits', icone: '🐣', age: 'dès 4 ans',
+    jeux: ['suites', 'chemin', 'etapes', 'tri', 'memoire', 'tresor', 'recette', 'machine', 'tour', 'coloriage'],
+  },
   grands: { nom: 'Pour les grands', icone: '🦉', age: 'dès 7 ans', jeux: ['labyrinthe', 'grimoire', 'conditions', 'balance'] },
 };
 const MAGIE = ['✨', '⭐', '🌟', '💫', '🪄', '🔮'];
@@ -142,12 +145,22 @@ let groupeCourant = null;
 
 function ecranAccueil(groupe = groupeCourant) {
   groupeCourant = groupe;
+  teinter(null);
   const vapeur = el('div', { class: 'vapeur' });
 
   if (!groupe) {
     derniereConsigne = TEXTES.bienvenue;
+    const trouves = AVENTURE.cristauxTrouves(AVENTURE.lire());
+    vapeur.append(el('button', {
+      class: 'bulle grosse-bulle bulle-aventure', style: '--d:0s',
+      onclick: () => { Son.pop(); ouvrirAventure(); },
+    }, [
+      el('span', { class: 'emoji-bulle', text: '🗺️' }),
+      el('span', { class: 'nom', text: "L'aventure" }),
+      el('span', { class: 'cristaux-bulle' }, MONDES_AVENTURE.map((m, i) => cristal(i < trouves ? m.cristal : '#00000022', 'mini'))),
+    ]));
     vapeur.append(...Object.entries(GROUPES).map(([id, g], i) => el('button', {
-      class: 'bulle grosse-bulle', style: `--d:${i * 0.2}s`,
+      class: 'bulle grosse-bulle', style: `--d:${(i + 1) * 0.2}s`,
       onclick: () => { Son.pop(); ecranAccueil(id); consigne(TEXTES.groupe[id]); },
     }, [el('span', { class: 'emoji-bulle', text: g.icone }), el('span', { class: 'nom', text: g.nom }), el('small', { text: g.age })])));
   } else {
@@ -218,12 +231,13 @@ function ecranNiveaux(jeu) {
 
 // ---------- Le jeu ----------
 
-function lancerNiveau(jeu, niveau) {
+// options (pour l'aventure) : decor fixe, retour (bouton ⬅️) et fin (au lieu de la fenêtre « Bravo »).
+function lancerNiveau(jeu, niveau, options = {}) {
   const nbManches = jeu.manches;
   const points = Array.from({ length: nbManches }, () => el('span', { class: 'point' }));
   const zone = el('section', { class: 'zone-jeu' });
   nouvelEcran(
-    barre(() => ecranNiveaux(jeu), jeu.icone + ' Niveau ' + (niveau + 1)),
+    barre(options.retour || (() => ecranNiveaux(jeu)), jeu.icone + ' Niveau ' + (niveau + 1)),
     el('main', {}, [el('div', { class: 'manches' }, points), zone]),
   );
   const maPartie = partie;
@@ -233,10 +247,11 @@ function lancerNiveau(jeu, niveau) {
     zone.replaceChildren();
     zone.className = 'zone-jeu';
     jeu.lancerManche(zone, {
-      decor: tirerDecor(),
+      decor: options.decor || tirerDecor(),
       niveau,
       config: jeu.niveaux[niveau],
       premiere: manche === 0,
+      manche,
       consigne,
       enCours: () => partie === maPartie,
       recommencer: () => { if (partie === maPartie) jouerManche(); },
@@ -249,6 +264,7 @@ function lancerNiveau(jeu, niveau) {
         if (partie !== maPartie) return;
         manche++;
         if (manche < nbManches) jouerManche();
+        else if (options.fin) { Progres.valider(jeu, niveau); options.fin(); }
         else finNiveau(jeu, niveau);
       },
     });
@@ -260,18 +276,30 @@ function finNiveau(jeu, niveau) {
   Progres.valider(jeu, niveau);
   Son.fete();
   confettis(MAGIE);
-  const suivant = niveau + 1 < jeu.niveaux.length;
-  consigne(suivant ? TEXTES.etoile : TEXTES.toutFini);
+  const niveauSuivant = niveau + 1 < jeu.niveaux.length;
+  // Après le dernier niveau, « Suivant » passe au jeu suivant du même groupe (en revenant au premier
+  // après le dernier), directement au premier niveau pas encore réussi.
+  const jeux = GROUPES[groupeDe(jeu)].jeux;
+  const prochainJeu = Jeux[jeux[(jeux.indexOf(jeu.id) + 1) % jeux.length]];
+  const allerPlusLoin = niveauSuivant
+    ? () => lancerNiveau(jeu, niveau + 1)
+    : () => lancerNiveau(prochainJeu, Math.min(Progres.reussis(prochainJeu), prochainJeu.niveaux.length - 1));
+  consigne(niveauSuivant ? TEXTES.etoile : TEXTES.toutFini + ' ' + TEXTES.jeuSuivant);
+
+  const action = (texte, icone, classe, quoi) => el('div', { class: 'action-fete' }, [
+    el('button', { class: 'rond gros ' + classe, 'aria-label': texte, text: icone, onclick: () => { fenetre.remove(); quoi(); } }),
+    el('span', { text: texte }),
+  ]);
   const fenetre = el('div', { class: 'fete' }, [
     el('div', { class: 'boite-fete' }, [
       el('div', { class: 'grosse-etoile', text: '⭐' }),
       el('p', { class: 'bravo', text: 'Bravo !' }),
       el('div', { class: 'choix-fete' }, [
-        el('button', { class: 'rond gros', 'aria-label': 'Retour au chaudron', text: '🏠', onclick: () => { fenetre.remove(); ecranAccueil(groupeDe(jeu)); } }),
-        el('button', { class: 'rond gros', 'aria-label': 'Rejouer', text: '🔁', onclick: () => { fenetre.remove(); lancerNiveau(jeu, niveau); } }),
-        suivant
-          ? el('button', { class: 'rond gros vert', 'aria-label': 'Niveau suivant', text: '▶️', onclick: () => { fenetre.remove(); lancerNiveau(jeu, niveau + 1); } })
-          : null,
+        action('Chaudron', '🏠', '', () => ecranAccueil(groupeDe(jeu))),
+        action('Rejouer', '🔁', '', () => lancerNiveau(jeu, niveau)),
+        niveauSuivant
+          ? action('Niveau suivant', '▶️', 'vert', allerPlusLoin)
+          : action('Jeu suivant', prochainJeu.icone.match(/\p{Extended_Pictographic}/u)?.[0] || '▶️', 'vert', allerPlusLoin),
       ]),
     ]),
   ]);

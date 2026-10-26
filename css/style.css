@@ -313,7 +313,7 @@ main {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 2px;
   padding: 10px;
-  animation: monte 0.8s ease-out var(--d) backwards, flotte 3.2s ease-in-out calc(var(--d) + 0.8s) infinite;
+  animation: monte 0.8s ease-out var(--d) backwards, flotte-doux 4.5s ease-in-out calc(var(--d) + 0.8s) infinite;
 }
 .bulle:hover { box-shadow: 0 0 40px #4ade80cc, inset -8px -10px 18px #22c55e44; }
 .bulle .emoji-bulle { font-size: clamp(1.8rem, 5vw, 2.4rem); line-height: 1; white-space: nowrap; }
@@ -910,6 +910,311 @@ main {
   animation: arrive 0.2s ease-out;
 }
 
+/* ---------- La mémoire ---------- */
+
+.etat-memoire { margin: 0; font-size: 2.6rem; }
+.grille-memoire { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; }
+.carte-memoire {
+  width: 130px; aspect-ratio: 1;
+  border-radius: 28px;
+  background: var(--carte);
+  box-shadow: var(--ombre);
+  font-size: 4rem;
+  border: 5px solid #fff;
+  transition: transform 0.1s;
+}
+.grille-memoire.demonstration .carte-memoire { cursor: default; }
+.carte-memoire.allume { animation: allume 0.6s ease-out; }
+@keyframes allume {
+  0% { transform: scale(1); }
+  25% { transform: scale(1.18); background: #fef08a; box-shadow: 0 0 0 8px #fde047, 0 0 40px #fde047; }
+  100% { transform: scale(1); }
+}
+
+/* ---------- La chasse au trésor ---------- */
+
+.indice-tresor { font-size: 4.5rem; line-height: 1; min-height: 1.1em; }
+.indice-tresor.apparait { animation: arrive 0.35s ease-out; }
+.rangee-tresor { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; }
+.boite-tresor {
+  width: clamp(76px, 15vw, 116px);
+  aspect-ratio: 1;
+  border-radius: 24px;
+  background: var(--carte);
+  border: 5px solid #fff;
+  box-shadow: var(--ombre);
+  font-size: clamp(2.6rem, 7vw, 3.8rem);
+  transition: opacity 0.4s, transform 0.15s, filter 0.4s;
+}
+.boite-tresor:active { transform: scale(0.94); }
+.boite-tresor.ouverte { background: #ede9fe; }
+.boite-tresor.exclue { opacity: 0.25; filter: grayscale(1); pointer-events: none; }
+.boite-tresor.trouve { opacity: 1; filter: none; background: #fef9c3; border-color: var(--or); box-shadow: 0 0 0 5px var(--or), 0 0 40px #fcd34d; animation: saute 0.5s 3; }
+.boite-tresor.revele { background: #fef9c3; border-color: var(--or); }
+.essais-tresor { display: flex; gap: 8px; font-size: 2rem; min-height: 1.2em; }
+.essais-tresor .utilise { opacity: 0.2; filter: grayscale(1); }
+
+/* ---------- La recette ---------- */
+
+.cuisine { display: flex; align-items: center; justify-content: center; gap: 32px; flex-wrap: wrap; }
+.carte-recette {
+  background: var(--parchemin);
+  color: var(--encre);
+  border-radius: 12px 24px 24px 12px;
+  border-left: 12px solid var(--bois);
+  box-shadow: var(--ombre);
+  padding: 8px 18px 14px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.titre-recette { font-size: 2rem; text-align: center; }
+.ligne-recette { display: flex; align-items: center; gap: 12px; padding: 4px 10px; border-radius: 14px; transition: background 0.2s, opacity 0.2s; }
+.numero-recette {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--accent); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 1.2rem;
+}
+.ingredient-recette { font-size: 2.8rem; line-height: 1; }
+.coche-recette { font-size: 1.4rem; visibility: hidden; }
+.ligne-recette.en-cours { background: #fde68a; animation: clignote 1.4s infinite; }
+.ligne-recette.faite { opacity: 0.55; }
+.ligne-recette.faite .coche-recette { visibility: visible; }
+.marmite { position: relative; width: 220px; }
+.marmite .chaudron { width: 100%; display: block; filter: drop-shadow(0 0 20px #4ade8055); }
+.marmite.prete .chaudron { filter: drop-shadow(0 0 30px #a855f7) hue-rotate(80deg); transition: filter 0.6s; }
+.plouf { position: absolute; left: 50%; top: -60px; font-size: 2.6rem; animation: plouf 0.85s ease-in forwards; }
+@keyframes plouf {
+  from { transform: translateX(-50%) translateY(0) scale(1); opacity: 1; }
+  to { transform: translateX(-50%) translateY(80px) scale(0.3); opacity: 0; }
+}
+
+/* ---------- La machine magique ---------- */
+
+.atelier-machine {
+  display: flex; flex-direction: column; gap: 12px;
+  background: #ffffff12;
+  border-radius: 24px;
+  padding: 14px 20px;
+}
+.ligne-machine { display: flex; align-items: center; gap: 12px; }
+.objet-machine {
+  min-width: 96px; height: 80px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 2px;
+  border-radius: 18px;
+  background: var(--carte);
+  font-size: 1.7rem;
+  line-height: 1;
+}
+.objet-machine.grand { font-size: 3.3rem; }
+.objet-machine.trou { border: 4px dashed var(--or); background: #ffffff22; color: var(--or); font-weight: 800; font-size: 2rem; animation: clignote 1.4s infinite; }
+.objet-machine.juste { box-shadow: 0 0 0 4px var(--vert); }
+.chapeau { font-size: 3rem; filter: drop-shadow(0 0 10px #c084fc); }
+.tapis-machine { font-size: 1.5rem; }
+.carte-choix.choix-machine { width: auto; aspect-ratio: auto; padding: 8px; }
+@media (max-width: 480px) {
+  .atelier-machine { padding: 10px 12px; }
+  .ligne-machine { gap: 6px; }
+  .objet-machine { min-width: 70px; height: 64px; font-size: 1.4rem; }
+  .objet-machine.grand { font-size: 2.6rem; }
+  .chapeau { font-size: 2.2rem; }
+  .tapis-machine { font-size: 1.1rem; }
+}
+
+/* ---------- La tour ---------- */
+
+.chantier { display: flex; gap: 56px; justify-content: center; align-items: flex-end; }
+.colonne-tour { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.tour {
+  display: flex; flex-direction: column-reverse; align-items: center; gap: 4px;
+  min-height: 210px;
+  padding: 0 14px 6px;
+  border-bottom: 8px solid var(--bois);
+}
+.brique {
+  width: 100px; height: 46px;
+  border-radius: 10px;
+  background: var(--c);
+  color: #fffd;
+  font-size: 1.6rem;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: inset 0 -5px 0 #0003;
+}
+.brique.vide { background: none; border: 3px dashed #ffffff55; box-shadow: none; }
+.brique.prochaine { border-color: var(--or); animation: clignote 1.4s infinite; }
+.sommet { font-size: 2.8rem; line-height: 1; animation: saute 0.5s 3; }
+.carte-choix.choix-brique { width: auto; aspect-ratio: auto; padding: 12px; }
+
+/* ---------- Le coloriage codé ---------- */
+
+.grille-coloriage { display: grid; grid-template-columns: repeat(var(--n), 58px); gap: 4px; padding: 8px; background: #ffffff14; border-radius: 16px; }
+.case-code {
+  width: 58px; height: 58px;
+  border-radius: 8px;
+  background: var(--parchemin);
+  color: #3b2a4a99;
+  font-size: 1.5rem;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.25s;
+}
+.case-code.vide { background: #ffffff10; }
+.case-code.coloriee { background: var(--c); color: transparent; }
+.grille-coloriage.fini { box-shadow: 0 0 0 4px var(--or), 0 0 40px #fcd34d88; }
+.grille-coloriage.fini .case-code.vide { background: var(--parchemin); }
+.palette { display: flex; gap: 20px; justify-content: center; }
+.pot-couleur {
+  width: 74px; height: 74px;
+  border-radius: 50%;
+  background: var(--c);
+  color: #fff;
+  font-size: 2rem;
+  border: 5px solid #fff;
+  box-shadow: var(--ombre);
+  text-shadow: 0 1px 2px #0006;
+  transition: transform 0.15s;
+}
+.pot-couleur.choisi { transform: scale(1.18); box-shadow: 0 0 0 5px var(--or), var(--ombre); }
+
+/* ---------- L'aventure ---------- */
+
+/* Un cristal : une pierre taillée de la couleur --c, qui brille. */
+.cristal {
+  display: inline-block;
+  width: 46px; height: 46px;
+  transform: rotate(45deg);
+  border-radius: 22%;
+  background:
+    linear-gradient(135deg, #ffffffcc 0 14%, transparent 15%),
+    linear-gradient(135deg, var(--c) 30%, color-mix(in srgb, var(--c) 55%, #000) 100%);
+  box-shadow: 0 0 18px var(--c), inset 0 0 0 3px #ffffff55;
+  flex-shrink: 0;
+}
+.cristal.vide { background: #ffffff18; box-shadow: inset 0 0 0 3px #ffffff40; }
+.cristal.mini { width: 14px; height: 14px; box-shadow: 0 0 6px var(--c); }
+.cristal.grand { width: 74px; height: 74px; }
+.cristal.cache { background: #ffffff20; box-shadow: inset 0 0 0 3px #ffffff55; }
+.cristal.trouve { animation: brille 1.6s ease-in-out infinite alternate; }
+.cristal.geant { width: 150px; height: 150px; animation: tourne-cristal 3s ease-in-out infinite; }
+@keyframes brille { to { box-shadow: 0 0 34px var(--c), inset 0 0 0 3px #ffffff88; } }
+@keyframes tourne-cristal {
+  0%, 100% { transform: rotate(45deg) scale(1); box-shadow: 0 0 30px var(--c); }
+  50% { transform: rotate(225deg) scale(1.12); box-shadow: 0 0 70px var(--c); }
+}
+
+/* Bulle de l'aventure sur l'accueil */
+.bulle-aventure { background: radial-gradient(circle at 32% 28%, #fff 0 8%, #fef9c3 22%, #fde68a 70%, #f59e0b); box-shadow: 0 0 30px #fbbf24aa, inset -8px -10px 18px #b4530944; }
+.cristaux-bulle { display: flex; gap: 6px; margin-top: 4px; }
+
+/* Les scènes racontées */
+.cinematique {
+  background:
+    radial-gradient(ellipse at 50% 80%, #4ade8033 0%, transparent 45%),
+    linear-gradient(#56307e, #2a1546);
+}
+.scene-histoire, .scene-carte, .scene-lieu, .scene-ceremonie { position: relative; width: 900px; height: 560px; }
+.scene-lieu { height: 520px; }
+.scene-histoire > *, .scene-carte > *:not(.trace-carte), .scene-lieu > *:not(.trace-carte) { position: absolute; transform: translate(-50%, -50%); }
+.scene-histoire .cristal, .scene-carte .cristal.badge { transform: translate(-50%, -50%) rotate(45deg); }
+.perso { font-size: 3.5rem; line-height: 1; filter: drop-shadow(0 8px 6px #0006); }
+.sorciere-histoire { font-size: 9rem; }
+.chat-histoire { font-size: 7rem; }
+.chaudron-histoire { width: 320px; }
+.chaudron-histoire .chaudron { width: 100%; display: block; filter: drop-shadow(0 0 30px #4ade8088); }
+.chaudron-histoire.tremble { animation: secoue 0.4s 4 0.3s; }
+.chaudron-histoire.arc-en-ciel .chaudron { animation: arc-en-ciel 2s linear infinite; filter: drop-shadow(0 0 40px #f0abfc); }
+@keyframes arc-en-ciel { to { filter: hue-rotate(360deg) drop-shadow(0 0 40px #f0abfc); } }
+.berce { animation: berce 3s ease-in-out infinite; }
+.secoue-long { animation: secoue 0.45s 5 0.3s; }
+.danse { animation: danse 0.8s ease-in-out infinite alternate; }
+@keyframes danse { from { transform: translate(-50%, -50%) rotate(-10deg); } to { transform: translate(-50%, -62%) rotate(10deg); } }
+.scene-histoire .cristal.flotte { animation: flotte-cristal 2.4s ease-in-out infinite; }
+.scene-histoire .cristal.flotte:nth-child(odd) { animation-delay: 0.6s; }
+@keyframes flotte-cristal { 50% { transform: translate(-50%, -62%) rotate(45deg); } }
+.pouf { font-size: 2rem; animation: pouf 1.4s ease-out 0.3s both; }
+@keyframes pouf { from { transform: translate(-50%, -50%) scale(0.3); opacity: 0; } 30% { opacity: 1; } to { transform: translate(-50%, -80%) scale(5); opacity: 0; } }
+.cristal.envol { animation: envol 1.4s ease-out both; }
+@keyframes envol {
+  from { transform: translate(-50%, -50%) rotate(45deg) scale(0.6); opacity: 1; }
+  to { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) rotate(400deg) scale(1); opacity: 0; }
+}
+.cristal.plonge { animation: plonge 1.2s ease-in both; }
+@keyframes plonge {
+  from { transform: translate(-50%, -50%) rotate(45deg); opacity: 1; }
+  to { transform: translate(calc(-50% + var(--dx)), 200px) rotate(405deg) scale(0.3); opacity: 0; }
+}
+.arrive-gauche { animation: arrive-gauche 1.6s ease-out both; }
+@keyframes arrive-gauche { from { transform: translate(-500%, -50%); } 80% { transform: translate(-50%, -50%); } 90% { transform: translate(-50%, -70%); } to { transform: translate(-50%, -50%); } }
+.apparait-tard { animation: arrive 0.6s ease-out 1.6s both; }
+.saute-doux { animation: saute-doux 1s ease-in-out infinite; }
+@keyframes saute-doux { 50% { transform: translate(-50%, -56%); } }
+.bouton-passer { right: calc(20px + env(safe-area-inset-right, 0px)); bottom: calc(20px + env(safe-area-inset-bottom, 0px)); z-index: 3; }
+.cinematique { padding-top: calc(16px + env(safe-area-inset-top, 0px)); }
+
+/* La carte du pays : un paysage dessiné (js/illustrations.js), la maison au centre. */
+.carte-pays { background: #2a1d5e; }
+.scene-carte { height: 600px; }
+.scene-carte > .illustration-carte, .scene-lieu > .illustration-carte { position: absolute; inset: 0; transform: none; }
+/* Le dessin déborde largement de sa boîte (overflow visible) : il remplit tout l'écran, sans cadre, quelle que soit sa forme. */
+.paysage-carte { width: 100%; height: 100%; display: block; overflow: visible; }
+.scintille { animation: scintille 2.6s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes scintille { 50% { opacity: 0.25; transform: scale(0.7); } }
+.fumee-svg circle { animation: fumee-svg 3s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+.fumee-svg circle:nth-child(2) { animation-delay: 0.6s; }
+.fumee-svg circle:nth-child(3) { animation-delay: 1.2s; }
+@keyframes fumee-svg { 50% { transform: translateY(-6px) scale(1.15); opacity: 0.25; } }
+.trace-carte { position: absolute; inset: 0; pointer-events: none; }
+.trace-carte svg { width: 100%; height: 100%; overflow: visible; }
+.chemin-dore { fill: none; stroke: #fde047; stroke-width: 7; stroke-linecap: round; stroke-dasharray: 1 16; filter: drop-shadow(0 0 5px #facc15); }
+.chemin-a-venir { fill: none; stroke: #ffffffaa; stroke-width: 10; stroke-dasharray: 2 22; stroke-linecap: round; }
+.chemin-fait { fill: none; stroke: var(--or); stroke-width: 12; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0 6px #fcd34d); }
+/* Un lieu du dessin : zone ronde invisible qu'on touche ; halo doré si c'est le lieu en cours. */
+.zone-lieu {
+  width: 160px; height: 150px;
+  border-radius: 50%;
+  background: none;
+  display: flex; align-items: center; justify-content: center;
+}
+.zone-lieu.zone-maison { width: 190px; height: 200px; }
+.zone-lieu.actuel { box-shadow: 0 0 0 5px #fde047cc, 0 0 40px #fde047aa, inset 0 0 30px #fde04755; animation: halo-zone 2.4s ease-in-out infinite; }
+@keyframes halo-zone { 50% { box-shadow: 0 0 0 8px #fde047, 0 0 60px #fde047cc, inset 0 0 40px #fde04777; } }
+.dessin-nuage { width: 190px; filter: drop-shadow(0 8px 10px #0003); }
+.zone-lieu .cristal.badge { position: absolute; top: -6px; right: 18px; width: 34px; height: 34px; }
+.chat-carte { width: 78px; height: 78px; z-index: 2; animation: saute-doux 2.4s ease-in-out infinite; filter: drop-shadow(0 6px 4px #0005); }
+.dessin-chat { width: 100%; height: 100%; display: block; }
+.reserve-cristaux { display: flex; gap: 22px; padding: 10px 20px; background: #00000040; border-radius: 999px; }
+
+/* Le chemin d'un lieu */
+.lieu-aventure { background: var(--nuit2); }
+.pierre {
+  width: 100px; height: 100px;
+  border-radius: 50%;
+  background: var(--carte);
+  border: 5px solid #fff;
+  box-shadow: 0 8px 0 #0004, 0 12px 20px #0004;
+  display: flex; align-items: center; justify-content: center;
+}
+.icone-pierre { font-size: 2.9rem; line-height: 1; }
+.pierre.faite { border-color: var(--or); }
+.etoile-pierre { position: absolute; right: -8px; top: -10px; font-size: 1.8rem; }
+.pierre.courante { box-shadow: 0 0 0 7px var(--or), 0 0 36px #fcd34d, 0 8px 0 #0004; animation: halo 2.4s ease-in-out infinite; }
+/* Repère doux pour le lieu ou la pierre à jouer : le halo respire, rien ne bouge (pas de mal de mer). */
+@keyframes halo { 50% { box-shadow: 0 0 0 10px #fcd34dcc, 0 0 56px #fde68a, 0 8px 0 #0004; } }
+.pierre.fermee { opacity: 0.7; filter: grayscale(0.5); background: #e9e3f5; }
+.chat-lieu { width: 84px; height: 84px; z-index: 3; pointer-events: none; transition: left 0.9s ease-in-out, top 0.9s ease-in-out; filter: drop-shadow(0 6px 4px #0006); }
+.chat-lieu .dessin-chat { width: 100%; height: 100%; display: block; }
+.chat-lieu.saute-vers { animation: hop 0.9s ease-in-out; }
+@keyframes hop { 50% { transform: translate(-50%, -110%); } }
+.socle-cristal { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.ami-socle { font-size: 2.6rem; }
+
+/* Le cristal retrouvé */
+.ceremonie { background: radial-gradient(circle at 50% 45%, #ffffff33, transparent 55%); }
+.scene-ceremonie { width: 600px; height: 420px; display: flex; align-items: center; justify-content: center; }
+.ami-ceremonie, .chat-ceremonie { position: absolute; bottom: 20px; font-size: 5rem; line-height: 1; }
+.ami-ceremonie { left: 60px; }
+.chat-ceremonie { right: 60px; }
+.ceremonie .danse { animation: danse-simple 0.8s ease-in-out infinite alternate; }
+@keyframes danse-simple { from { transform: rotate(-10deg); } to { transform: translateY(-14px) rotate(10deg); } }
+
 /* ---------- Fête ---------- */
 
 .fete {
@@ -930,7 +1235,9 @@ main {
 }
 .grosse-etoile { font-size: 6rem; animation: tourne 1.5s ease-in-out infinite alternate; }
 .bravo { font-size: 2.6rem; font-weight: 800; color: var(--accent); margin: 0 0 16px; }
-.choix-fete { display: flex; gap: 16px; justify-content: center; }
+.choix-fete { display: flex; gap: 18px; justify-content: center; align-items: flex-start; }
+.action-fete { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 96px; }
+.action-fete span { font-weight: 800; font-size: 1rem; line-height: 1.1; text-align: center; }
 
 .confettis { position: fixed; inset: 0; pointer-events: none; z-index: 20; overflow: hidden; }
 .confettis span { position: absolute; top: -3rem; animation: tombe 2.6s ease-in forwards; }
@@ -950,6 +1257,7 @@ main {
 @keyframes tombe { to { transform: translateY(110vh) rotate(360deg); } }
 @keyframes monte { from { transform: translateY(120px) scale(0.2); opacity: 0; } }
 @keyframes flotte { 50% { transform: translateY(-8px); } }
+@keyframes flotte-doux { 50% { transform: translateY(-4px); } }
 @keyframes berce { 50% { transform: rotate(-4deg); } }
 @keyframes flamme { to { transform: scaleY(1.2) translateY(-3px); } }
 @keyframes bouillonne {

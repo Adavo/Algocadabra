@@ -8,7 +8,7 @@ Jeux.etapes = {
   icone: '1️⃣2️⃣3️⃣',
   concept: "Un algorithme, c'est une recette : des étapes à faire dans le bon ordre. Ici l'enfant remet les étapes d'une action de la vie quotidienne dans l'ordre, et comprend que changer l'ordre change le résultat.",
   manches: 2,
-  niveaux: [{ etapes: 3 }, { etapes: 3 }, { etapes: 4 }, { etapes: 4 }],
+  niveaux: [{ etapes: 3 }, { etapes: 3 }, { etapes: 4 }, { etapes: 4 }, { etapes: 5 }],
 
   textes: {
     intro: "Remets les images dans le bon ordre. Touche d'abord ce qui se passe en premier.",
@@ -21,7 +21,7 @@ Jeux.etapes = {
   // les consignes, le titre de chaque histoire et chaque image, lue quand on la touche.
   phrases() {
     const T = this.textes;
-    const histoires = [...DECORS.flatMap(d => d.histoires), ...HISTOIRES_COMMUNES];
+    const histoires = [...tousLesDecors().flatMap(d => d.histoires), ...HISTOIRES_COMMUNES];
     return [
       T.intro, T.certainesBonnes, T.pasToutAFait,
       ...histoires.map(h => T.histoire(h.titre)),

@@ -132,9 +132,10 @@ function afficherEspace(boite, fermer) {
   const effacer = el('button', {
     class: 'bouton-texte petit danger', text: '🗑️ Remettre la progression à zéro',
     onclick: () => {
-      if (!confirm('Effacer toutes les étoiles et revenir au niveau 1 dans tous les jeux ?')) return;
+      if (!confirm("Effacer toutes les étoiles, revenir au niveau 1 dans tous les jeux et recommencer l'aventure ?")) return;
       Progres.tout = {};
       Stockage.ecrire('algocadabra-progres-v2', {});
+      AVENTURE.ecrire({ etapes: 0, introVue: false });
       boite.dataset.remisAZero = '1';
       effacer.textContent = '✔️ Progression remise à zéro';
       effacer.disabled = true;

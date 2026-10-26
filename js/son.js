@@ -394,6 +394,10 @@ const Son = (() => {
     get voixParent() { return voixParent; },
     musique: Musique,
     pop: () => note(660, 0, 0.12, 'triangle'),
+    // Une note de musique (jeu de la mémoire : chaque image a la sienne).
+    ton: frequence => note(frequence, 0, 0.45, 'triangle', 0.14),
+    // La voix est-elle en train de parler ? (pour attendre la fin d'une consigne)
+    get parle() { return voixOccupee || ('speechSynthesis' in window && (speechSynthesis.speaking || speechSynthesis.pending)); },
     pas: () => note(520, 0, 0.1, 'sine', 0.08),
     succes: () => { note(523, 0, 0.15); note(659, 0.12, 0.15); note(784, 0.24, 0.3); },
     fete: () => [523, 659, 784, 1047, 784, 1047].forEach((f, i) => note(f, i * 0.12, 0.25, 'triangle')),

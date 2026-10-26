@@ -7,7 +7,7 @@ const ESSAIE_ENCORE = ['Essaie encore !', 'Presque ! Essaie encore.', 'Oups ! Re
 
 // Les phrases de la maison, des menus et de l'espace parents.
 const TEXTES = {
-  bienvenue: 'Bienvenue chez la sorcière ! Dans son chaudron magique, il y a des jeux. Choisis : les jeux pour les petits, ou les jeux pour les grands.',
+  bienvenue: "Bienvenue chez la sorcière ! Dans son chaudron magique, il y a des jeux. Choisis : l'aventure, les jeux pour les petits, ou les jeux pour les grands.",
   groupe: {
     petits: 'Les jeux pour les petits ! Choisis une bulle.',
     grands: 'Les jeux pour les grands ! Choisis une bulle.',
@@ -17,6 +17,7 @@ const TEXTES = {
   niveauFerme: "Réussis d'abord le niveau d'avant !",
   etoile: 'Bravo, tu as gagné une étoile ! On continue ?',
   toutFini: 'Bravo ! Tu as fini tous les niveaux de ce jeu !',
+  jeuSuivant: 'On passe au jeu suivant ?',
   testVoix: "Bonjour ! Je suis la voix de la sorcière. On va bien s'amuser !",
 };
 
@@ -61,9 +62,11 @@ function toutesLesPhrases() {
     TEXTES.niveauFerme,
     TEXTES.etoile,
     TEXTES.toutFini,
+    TEXTES.jeuSuivant,
     TEXTES.testVoix,
     ...Object.values(Jeux).map(TEXTES.choisirNiveau),
     ...Object.values(Jeux).flatMap(jeu => (jeu.phrases ? jeu.phrases() : [])),
+    ...(typeof AVENTURE !== 'undefined' ? AVENTURE.phrases() : []),
   ];
   return [...new Set(textes.flatMap(decouperPhrases))];
 }

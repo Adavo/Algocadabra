@@ -8,6 +8,24 @@ Les jeux sortent de son chaudron magique, en deux groupes : « Pour les petits �
 Double-cliquer sur `index.html` : le site s'ouvre dans le navigateur, sans installation ni Internet.
 (La police arrondie se télécharge si Internet est disponible ; sinon une police du système est utilisée.)
 
+## L'aventure (dès 4 ans)
+
+Le chaudron de la sorcière a perdu ses 5 cristaux : le chat part les chercher, de la maison jusqu'au
+sommet de la montagne, du matin à la nuit. L'histoire est racontée par la voix et des scènes animées,
+sans texte à lire.
+
+| Lieu | Moment | Ami | Cristal | Niveau des activités |
+| --- | --- | --- | --- | --- |
+| 🏠 La maison de la sorcière | le matin | la sorcière | violet | 1 |
+| 🥕 Le potager magique | fin de matinée | le lapin | vert | 2 |
+| 🌲 La forêt enchantée | l'après-midi | le hibou et les fées | orange | 3 |
+| 🐸 Le lac aux nénuphars | le coucher du soleil | la grenouille | bleu | 4 |
+| ⛰️ Le sommet des étoiles | la nuit | le petit dragon | doré | 5 |
+
+Chaque lieu est un chemin de 10 étapes (une par activité des petits), dans le décor du lieu.
+Le 10e jeu réussi rend le cristal et ouvre le lieu suivant. Le code est dans `js/aventure.js`,
+les lieux dans `MONDES_AVENTURE` (`js/decors.js`).
+
 ## Pour les petits (dès 4 ans)
 
 Pas besoin de savoir lire : toutes les consignes sont dites à voix haute (bouton 👂 pour répéter).
@@ -18,8 +36,14 @@ sans jamais étiqueter un univers « pour filles » ou « pour garçons ».
 | --- | --- | --- |
 | Les suites | motifs qui se répètent (base des boucles) | 5 |
 | Le chemin | écrire un programme de flèches, corriger ses erreurs | 5 |
-| Les étapes | remettre une action dans l'ordre (séquence d'instructions) | 4 |
+| Les étapes | remettre une action dans l'ordre (séquence d'instructions) | 5 |
 | Le rangement | trier du plus petit au plus grand (tri par sélection) | 5 |
+| La mémoire | retenir et reproduire une suite d'images et de notes | 5 |
+| La chasse au trésor | trouver le trésor grâce aux indices « plus à gauche / plus à droite » (recherche par dichotomie) | 5 |
+| La recette | suivre une recette en images, dans l'ordre (exécuter un algorithme) | 5 |
+| La machine magique | deviner ce que fait la machine à partir d'exemples (entrée → sortie) | 5 |
+| La tour | reconstruire une tour de bas en haut (décomposer un problème) | 5 |
+| Le coloriage codé | colorier selon un code symbole → couleur, un dessin apparaît (pixels) | 5 |
 
 ## Pour les grands (dès 7 ans)
 

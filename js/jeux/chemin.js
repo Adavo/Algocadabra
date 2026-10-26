@@ -35,7 +35,7 @@ Jeux.chemin = {
     const T = this.textes;
     return [
       T.pasDeFleches, T.horsPlateau, T.corrige,
-      ...DECORS.flatMap(d => [T.contreObstacle(d), T.presque(d), T.intro(d), T.encore(d), T.obstacles(d)]),
+      ...tousLesDecors().flatMap(d => [T.contreObstacle(d), T.presque(d), T.intro(d), T.encore(d), T.obstacles(d)]),
     ];
   },
 
