@@ -123,18 +123,33 @@ main { max-width: 900px; margin: 0 auto; padding: 8px 16px 40px; }
 .entete-parents h2 { margin: 0; color: var(--or); font-size: 1.5rem; }
 .entete-parents .rond { width: 44px; height: 44px; font-size: 1.1rem; }
 .question-porte { font-size: 1.4rem; font-weight: 800; margin: 8px 0 14px; }
-.ligne-porte { display: flex; gap: 10px; flex-wrap: wrap; }
-.champ-reponse {
-  flex: 1 1 160px;
-  min-width: 0;
-  font: inherit;
-  font-size: 1.3rem;
-  padding: 8px 14px;
+.affichage-reponse { display: flex; justify-content: center; gap: 10px; margin: 6px 0 16px; }
+.case-chiffre {
+  width: 52px; height: 62px;
+  display: flex; align-items: center; justify-content: center;
   border-radius: 12px;
-  border: none;
+  border: 3px dashed #ffffff55;
+  font-size: 2rem; font-weight: 800;
+}
+.case-chiffre.remplie { border-style: solid; border-color: var(--or); background: var(--carte); color: var(--encre); }
+.pave {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  width: min(100%, 300px);
+  margin: 0 auto;
+}
+.touche {
+  height: 58px;
+  border-radius: 16px;
   background: var(--carte);
   color: var(--encre);
+  font-size: 1.6rem;
+  font-weight: 800;
+  box-shadow: 0 4px 0 #0003;
 }
+.touche:active { transform: translateY(3px); box-shadow: 0 1px 0 #0003; }
+.touche.effacer { background: #ede9fe; }
 .message-porte { min-height: 1.5em; color: #fca5a5; font-weight: 700; }
 .section-parents { margin-top: 18px; padding-top: 12px; border-top: 1px solid #ffffff22; }
 .section-parents h3 { margin: 0 0 8px; font-size: 1.2rem; }

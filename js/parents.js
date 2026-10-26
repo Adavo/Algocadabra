@@ -20,12 +20,16 @@ function ouvrirEspaceParents() {
   const boite = el('div', { class: 'boite-parents' });
   const fermer = () => {
     fenetre.remove();
-    document.removeEventListener('keydown', echap);
+    document.removeEventListener('keydown', clavier);
     // Après une remise à zéro, on revient au chaudron pour que les étoiles soient à jour.
     if (boite.dataset.remisAZero) ecranAccueil(null);
   };
-  const echap = e => { if (e.key === 'Escape') fermer(); };
-  document.addEventListener('keydown', echap);
+  // Échap ferme ; sur ordinateur, les touches du clavier remplissent aussi le pavé de chiffres.
+  const clavier = e => {
+    if (e.key === 'Escape') fermer();
+    else if (boite.touche && /^[0-9]$|^Backspace$/.test(e.key)) boite.touche(e.key);
+  };
+  document.addEventListener('keydown', clavier);
   fenetre.addEventListener('click', e => { if (e.target === fenetre) fermer(); });
   fenetre.append(boite);
   document.body.append(fenetre);
@@ -37,35 +41,59 @@ function afficherQuestion(boite, fermer) {
   const q = choix[hasard(choix.length)];
   derniereQuestion = q;
 
-  const champ = el('input', {
-    type: 'text', inputmode: 'numeric', autocomplete: 'off', class: 'champ-reponse',
-    'aria-label': 'Ta réponse', placeholder: 'Réponse',
-  });
+  // Un pavé de chiffres à l'écran plutôt que le clavier de la tablette.
+  // La réponse est vérifiée dès que tous les chiffres sont tapés (les réponses sont des années).
+  const longueur = String(q.reponse).length;
+  let saisie = '';
+  let attente = false;
+  const cases = Array.from({ length: longueur }, () => el('span', { class: 'case-chiffre' }));
+  const affichage = el('div', { class: 'affichage-reponse', 'aria-live': 'polite', 'aria-label': 'Ta réponse' }, cases);
   const message = el('p', { class: 'message-porte' });
-  const valider = () => {
-    if (Number(champ.value.trim().replace(',', '.')) === q.reponse) {
+
+  const dessiner = () => cases.forEach((c, i) => {
+    c.textContent = saisie[i] || '';
+    c.classList.toggle('remplie', i < saisie.length);
+  });
+
+  const verifier = () => {
+    if (Number(saisie) === q.reponse) {
+      boite.touche = null;
       Son.succes();
       afficherEspace(boite, fermer);
       return;
     }
+    attente = true;
     Son.oups();
-    secouer(champ);
+    secouer(affichage);
     message.textContent = 'Ce n\'est pas la bonne réponse. Voici une autre question.';
     setTimeout(() => { if (boite.isConnected) afficherQuestion(boite, fermer); }, 1400);
   };
-  champ.addEventListener('keydown', e => { if (e.key === 'Enter') valider(); });
+
+  boite.touche = touche => {
+    if (attente) return;
+    if (touche === 'Backspace') saisie = saisie.slice(0, -1);
+    else if (saisie.length < longueur) saisie += touche;
+    Son.pop();
+    dessiner();
+    if (saisie.length === longueur) verifier();
+  };
+
+  const pave = el('div', { class: 'pave' }, [
+    ...['1', '2', '3', '4', '5', '6', '7', '8', '9'].map(c => el('button', { class: 'touche', text: c, onclick: () => boite.touche(c) })),
+    el('span'),
+    el('button', { class: 'touche', text: '0', onclick: () => boite.touche('0') }),
+    el('button', { class: 'touche effacer', text: '⌫', 'aria-label': 'Effacer le dernier chiffre', onclick: () => boite.touche('Backspace') }),
+  ]);
 
   boite.replaceChildren(
     enTeteParents('🔒 Espace parents', fermer),
     el('p', { text: 'Pour entrer, réponds à cette question :' }),
-    el('p', { class: 'question-porte', text: q.question }),
-    el('div', { class: 'ligne-porte' }, [
-      champ,
-      el('button', { class: 'bouton-texte vert petit', text: 'Valider', onclick: valider }),
-    ]),
+    // Espace insécable avant « ? » : le point d'interrogation ne part jamais seul à la ligne.
+    el('p', { class: 'question-porte', text: q.question.replace(/ \?$/, String.fromCharCode(160) + '?') }),
+    affichage,
+    pave,
     message,
   );
-  champ.focus();
 }
 
 function enTeteParents(titre, fermer) {

@@ -58,6 +58,6 @@ reprend donc toujours la dernière version publiée, sans avoir à vider son cac
 ## Espace parents
 
 Le bouton ⚙️ en haut à droite ouvre l'espace parents : son, volume de la voix, musique (marche/arrêt et volume), choix de la voix,
-remise à zéro de la progression, et ce que chaque jeu apprend. Pour y entrer, il faut taper la réponse
+remise à zéro de la progression, et ce que chaque jeu apprend. Pour y entrer, il faut taper sur le pavé de chiffres la réponse
 à une question de culture générale (une date) tirée au hasard parmi 5, trop difficile pour les enfants et jamais lue à voix haute.
 Les questions sont dans `js/parents.js`.
