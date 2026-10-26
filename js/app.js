@@ -31,6 +31,11 @@ function barre(retour, titre) {
     text: Son.actif ? '🔊' : '🔇',
     onclick: () => { boutonSon.textContent = Son.basculer() ? '🔊' : '🔇'; },
   });
+  const boutonMusique = el('button', {
+    class: 'rond' + (Son.musiqueActive ? '' : ' coupe'), 'aria-label': 'Couper ou remettre la musique',
+    text: '🎵',
+    onclick: () => { boutonMusique.classList.toggle('coupe', !Son.basculerMusique()); },
+  });
   return el('header', { class: 'barre' }, [
     retour
       ? el('button', { class: 'rond', 'aria-label': 'Retour', text: '⬅️', onclick: () => { Son.pop(); retour(); } })
@@ -38,6 +43,7 @@ function barre(retour, titre) {
     el('h1', { text: titre }),
     el('div', { class: 'boutons-barre' }, [
       el('button', { class: 'rond', 'aria-label': 'Répéter la consigne', text: '👂', onclick: () => Son.dire(derniereConsigne) }),
+      boutonMusique,
       boutonSon,
     ]),
   ]);
@@ -144,6 +150,47 @@ function pourLesParents() {
     el('p', { text: "Algocadabra fait découvrir la pensée algorithmique. Toutes les consignes sont dites à voix haute (bouton 👂 pour les répéter) : les plus jeunes n'ont pas besoin de savoir lire." }),
     el('p', { text: "« Pour les petits » (dès 4 ans) : suites, petits programmes de flèches, étapes dans l'ordre, rangement. « Pour les grands » (dès 7 ans) : planifier un programme avec des boucles, trouver l'erreur dans un programme, écrire des conditions « si… alors… sinon », trier avec une balance." }),
     el('p', { text: "Les décors changent à chaque partie (fées, licornes, chatons, potions, espace…) pour que chaque enfant y trouve son bonheur. La progression est enregistrée dans ce navigateur uniquement, rien n'est envoyé sur Internet." }),
+    choixDeLaVoix(),
+  ]);
+}
+
+// Les voix disponibles dépendent de l'appareil et du navigateur : le parent peut choisir la plus agréable.
+function choixDeLaVoix() {
+  const liste = el('select', { 'aria-label': 'Voix des consignes' });
+  const conseil = el('p', { class: 'conseil-voix' });
+  const naturelle = v => /natural|neural|premium|enhanced|google|online/i.test(v.name);
+
+  function remplir() {
+    const voix = Son.voixFrancaises();
+    liste.replaceChildren(
+      el('option', { value: '', text: 'Automatique' + (voix[0] ? ' (' + voix[0].name + ')' : '') }),
+      ...voix.map(v => el('option', { value: v.voiceURI, text: (naturelle(v) ? '⭐ ' : '') + v.name })),
+    );
+    liste.value = voix.some(v => v.voiceURI === Son.voixParent) ? Son.voixParent : '';
+    conseil.textContent = !voix.length
+      ? "Ce navigateur n'a pas de voix française : les consignes ne seront pas lues."
+      : voix.some(naturelle)
+        ? '⭐ = voix naturelle, la moins « robot ».'
+        : "Ce navigateur n'a que des voix assez « robot ». Pour une voix bien plus naturelle : ouvrez le site avec Microsoft Edge (voix « Natural ») ou Google Chrome. Sur iPad ou Mac : Réglages › Accessibilité › Contenu énoncé › Voix › Français, puis téléchargez une voix « Premium » ou « Améliorée ».";
+  }
+  remplir();
+  // Une seule liste à jour à la fois (l'accueil est redessiné souvent).
+  if ('speechSynthesis' in window) speechSynthesis.onvoiceschanged = remplir;
+  liste.addEventListener('change', () => {
+    Son.choisirVoixParent(liste.value || null);
+    Son.dire('Bonjour ! Je suis la voix de la sorcière. On va bien s\'amuser !');
+  });
+
+  return el('div', { class: 'choix-voix' }, [
+    el('label', { text: '🗣️ Voix des consignes' }),
+    el('div', { class: 'ligne-voix' }, [
+      liste,
+      el('button', {
+        class: 'bouton-texte petit', text: '▶️ Écouter',
+        onclick: () => Son.dire('Bonjour ! Je suis la voix de la sorcière. On va bien s\'amuser !'),
+      }),
+    ]),
+    conseil,
   ]);
 }
 

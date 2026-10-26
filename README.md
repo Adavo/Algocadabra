@@ -30,6 +30,16 @@ sans jamais étiqueter un univers « pour filles » ou « pour garçons ».
 | Le tri de la sorcière | conditions « SI … ALORS … SINON » pour ranger les ingrédients, règle à deviner d'après des exemples, puis « SINON SI » | 5 |
 | La balance des potions | trier en comparant deux à deux, avec un nombre de pesées limité | 5 |
 
+## Son
+
+- Une petite musique de fond magique est jouée par le navigateur lui-même (Web Audio, aucun fichier audio),
+  à partir du premier toucher de l'enfant. Elle baisse automatiquement pendant que la voix lit une consigne.
+- 🎵 coupe ou remet la musique seule ; 🔊 coupe ou remet tout le son (voix, bruitages, musique).
+- La musique s'arrête quand la page est cachée (autre onglet, tablette en veille).
+- La voix des consignes est choisie automatiquement parmi les voix françaises de l'appareil, en préférant
+  les voix « naturelles » (Edge : « Natural », Chrome : « Google français », iPad/Mac : « Premium »).
+  Un parent peut en choisir une autre dans « Pour les parents ». Les consignes sont lues phrase par phrase.
+
 Les labyrinthes, terrains et sorts sont générés au hasard : chaque partie est différente.
 La progression est gardée dans le navigateur (localStorage).
 
