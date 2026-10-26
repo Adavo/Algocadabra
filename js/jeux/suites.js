@@ -5,7 +5,7 @@ Jeux.suites = {
   id: 'suites',
   nom: 'Les suites',
   icone: '🎃⭐',
-  concept: "Repérer une régularité (un motif qui se répète) et prévoir la suite. C'est la base des boucles en programmation : une même séquence répétée plusieurs fois. Niveau 1 : deux images qui alternent. Niveau 2 : trois images. Niveau 3 : des images répétées dans le motif, et la suite ne commence pas forcément au début du motif. Niveau 4 : l'image à trouver est au milieu. Niveau 5 : deux images manquent.",
+  concept: "Repérer une régularité (un motif qui se répète) et prévoir la suite. C'est la base des boucles en programmation : une même séquence répétée plusieurs fois.",
   manches: 3,
   niveaux: [
     {
